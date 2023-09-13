@@ -60,7 +60,7 @@ class _SlotBookingPageState extends State<SlotBookingPage> {
           });
           Fluttertoast.showToast(
               msg:
-                  'Selected date: ${MyDateUtils.formatDateTime(selectedDate!, 'dd MMM yyyy')}');
+                  'Selected date: ${MyDateUtils.formatDateAsToday(selectedDate!, 'dd MMM yyyy')}');
         },
         firstDate: DateTime.now(),
         lastDate: DateTime.now().add(const Duration(days: 30)),
@@ -174,12 +174,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          titleLargeText('Haircut Service',context),
-                          bodyMedText('At HairStyle Studio,context',context,
+                          titleLargeText('Haircut Service', context),
+                          bodyMedText('At HairStyle Studio,context', context,
                               color: Colors.grey),
                           SizedBox(height: 10),
-                          bodyMedText('Slot: 10:AM - 11:00AM',context),
-                          capText('On 13 Aug 2023',context,
+                          bodyMedText('Slot: 10:AM - 11:00AM', context),
+                          capText('On 13 Aug 2023', context,
                               fontWeight: FontWeight.bold),
                         ],
                       ),
@@ -333,7 +333,7 @@ class _SlotItem extends StatelessWidget {
                     : getTheme.colorScheme.secondary.withOpacity(0.2))),
         child: Column(
           children: [
-            capText(time,context, fontSize: 8),
+            capText(time, context, fontSize: 8),
             height5(),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -341,7 +341,7 @@ class _SlotItem extends StatelessWidget {
               children: [
                 const Icon(Icons.access_time_rounded, size: 10),
                 width5(),
-                capText('$duration min',context, fontSize: 8),
+                capText('$duration min', context, fontSize: 8),
               ],
             ),
           ],
@@ -426,18 +426,19 @@ class _StaffCard extends StatelessWidget {
                   child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  bodyMedText(employee.name,context),
+                  bodyMedText(employee.name, context),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      capText(employee.qualification,context),
+                      capText(employee.qualification, context),
                       Row(
                         children: [
                           const Icon(Icons.star,
                               color: Colors.yellow, size: 15),
                           const SizedBox(width: 4),
                           capText(
-                              '${employee.rating} (${employee.reviews} reviews)',context),
+                              '${employee.rating} (${employee.reviews} reviews)',
+                              context),
                         ],
                       ),
                     ],

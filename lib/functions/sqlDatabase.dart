@@ -1,18 +1,28 @@
 // create a database to store the transactions
 import 'dart:convert';
 
+import 'package:my_global_tools/utils/default_logger.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SqlDb {
   static final SqlDb _instance = SqlDb._internal();
   factory SqlDb() => _instance;
 
+  ///commands to create the transactions table
+  var sqlTransactionsCommand =
+      "CREATE TABLE transactions (id INTEGER PRIMARY KEY, type TEXT, data TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+
   SqlDb._internal();
 
   late Database _db;
 
   Future<Database> get db async {
-    _db = await initDb();
+    try {
+      _db = await initDb();
+      // await upgradeDb();
+    } catch (e) {
+      errorLog(e.toString(), 'SqlDb');
+    }
     return _db;
   }
 
@@ -20,8 +30,7 @@ class SqlDb {
     String path = await getDatabasesPath();
     return await openDatabase("${path}transactions.db", version: 1,
         onCreate: (Database db, int version) async {
-      await db.execute(
-          "CREATE TABLE transactions (id INTEGER PRIMARY KEY, type TEXT, data TEXT)");
+      await db.execute(sqlTransactionsCommand);
     });
   }
 
@@ -29,8 +38,7 @@ class SqlDb {
   Future upgradeDb() async {
     var dbClient = await db;
     await dbClient.execute("DROP TABLE IF EXISTS transactions");
-    await dbClient.execute(
-        "CREATE TABLE transactions (id INTEGER PRIMARY KEY, type TEXT, data TEXT)");
+    await dbClient.execute(sqlTransactionsCommand);
   }
 
   Future<int> insert(String type, Map<String, dynamic> data) async {
@@ -53,9 +61,9 @@ class SqlDb {
   }
 
   // get all the transactions
-  Future<List<Map<String, dynamic>>> getAll() async {
+  Future<List<Map<String, dynamic>>> getAll({String? oredrBy}) async {
     var dbClient = await db;
-    return await dbClient.query('transactions');
+    return await dbClient.query('transactions', orderBy: oredrBy);
   }
 
   // get a transaction by id

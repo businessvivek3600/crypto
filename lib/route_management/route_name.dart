@@ -15,13 +15,12 @@ class RouteName {
   static const String verifyPhoneOTP = 'verifyPhoneOTP';
   static const String registration = 'registration';
 
-
   //home
   static const String home = 'home';
   static const String search = 'search';
   static const String sendCoin = 'sendCoin';
   static const String coinChat = 'coinChat';
-
+  static const String tx = 'tx';
 
   static const String categories = 'categories';
   static const String categoryDetail = 'categoryDetail';

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -162,6 +164,9 @@ class MyDialogs {
     VoidCallback? onCancel,
     VoidCallback? onConfirm,
     bool noImage = true,
+    Color? titleColor,
+    Color? contentColor,
+    Color? dialogColor,
   }) {
     PanaraConfirmDialog.showAnimatedGrow(
       context,
@@ -171,6 +176,8 @@ class MyDialogs {
       message: desc ?? "This is the Panara Confirm Dialog Normal.",
       confirmButtonText: confirmButtonText ?? "Confirm",
       cancelButtonText: cancelButtonText ?? "Cancel",
+      color: dialogColor,
+      textColor: contentColor,
       onTapCancel: () {
         if (onCancel != null) onCancel();
         Navigator.pop(context);
@@ -265,6 +272,7 @@ class MyDialogs {
       context: context,
       barrierDismissible: dismissible,
       barrierLabel: '',
+
       // transitionDuration: const Duration(milliseconds: 300),
       // transitionBuilder: (context, animation, secondaryAnimation, child) =>
       //     MyWidgetAnimations.grow(animation, secondaryAnimation, child),
@@ -273,18 +281,18 @@ class MyDialogs {
           Future.delayed(Duration(milliseconds: duration), () => Get.back());
         }
         var titleText = title != null
-            ? titleLargeText(title,context,
+            ? titleLargeText(title, context,
                 textAlign: titleAlign, fontSize: 18)
             : null;
         var descText = desc != null
-            ? bodyMedText(desc,context, textAlign: descAlign)
+            ? bodyMedText(desc, context, textAlign: descAlign)
             : null;
         var actions = [
           if (!hideCancel)
             FilledButton(
                 style: FilledButton.styleFrom(
                     backgroundColor: cancelBtnColor ?? Colors.grey[400]),
-                child: bodyMedText(cancelButtonText ?? 'Cancel',context,
+                child: bodyMedText(cancelButtonText ?? 'Cancel', context,
                     color: Colors.white),
                 onPressed: () {
                   if (onCancel != null) {
@@ -296,7 +304,7 @@ class MyDialogs {
           if (!hideConfirm)
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: confirmBTnColor),
-              child: bodyMedText(confirmButtonText ?? 'Confirm',context,
+              child: bodyMedText(confirmButtonText ?? 'Confirm', context,
                   color: Colors.white),
               onPressed: () async {
                 if (onConfirm != null) {
@@ -314,7 +322,7 @@ class MyDialogs {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 title: titleText,
-                backgroundColor: Colors.white,
+                // backgroundColor: Colors.white,
                 content: descText,
                 actionsAlignment: actionsAlignment,
                 actions: actions);
@@ -337,7 +345,9 @@ class MyDialogs {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: lottieFile != null ? null : const EdgeInsetsDirectional.all(16),
+                padding: lottieFile != null
+                    ? null
+                    : const EdgeInsetsDirectional.all(16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   color:

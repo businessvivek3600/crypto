@@ -23,6 +23,7 @@ class RoutePath {
   static const String search = RouteName.search;
   static const String sendCoin = RouteName.sendCoin;
   static const String coinChat = RouteName.coinChat;
+  static const String tx = RouteName.tx;
 
   static const String categories = RouteName.categories;
   static const String categoryDetail = RouteName.categoryDetail;

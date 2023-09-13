@@ -179,6 +179,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../screens/App/transaction_details.dart';
 import '../screens/chat/ChatPageExample.dart';
 import '/models/recent_users.dart';
 import '/models/wallet_model.dart';
@@ -249,6 +250,11 @@ class MyRouter {
                 // wallet: wallet,
               );
             }, null),
+            _newRoute2(RouteName.tx, (GoRouterState state) {
+              return TransactionDetailsScreen(
+                data: state.extra as Map<String, dynamic>?,
+              );
+            }, null),
             _newRoute2(
                 RouteName.sendCoin,
                 (GoRouterState state) => SendCoinPage(
@@ -315,6 +321,9 @@ class MyRouter {
                     url: state.queryParameters['url'],
                     showAppBar: state.queryParameters['showAppBar'] ?? '1',
                     showToast: state.queryParameters['showToast'] ?? '1',
+                    enableSearch: state.queryParameters['enableSearch'] == '1',
+                    allowBack: state.queryParameters['allowBack'] == '1',
+                    allowCopy: state.queryParameters['allowCopy'] == '1',
                     changeOrientation:
                         state.queryParameters['changeOrientation'] ?? '0'),
                 null),

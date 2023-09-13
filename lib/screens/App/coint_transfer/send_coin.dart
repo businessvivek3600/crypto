@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_global_tools/utils/color.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../functions/sqlDatabase.dart';
 import '/providers/auth_provider.dart';
@@ -808,17 +809,22 @@ class ReceiptDialog extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: FilledButton(
-                                  onPressed: () {
+                                child: GestureDetector(
+                                  onTap: () {
                                     // launch url
                                     launchUrl(Uri.parse(data['url']));
                                   },
-                                  style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.grey[
-                                          getTheme.brightness == Brightness.dark
-                                              ? 100
-                                              : 400]),
-                                  child: const Text('View on Blockchain'),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      bodyMedText('View on Blockchain', context,
+                                          decoration: TextDecoration.underline),
+                                      width5(),
+                                      const Icon(Icons.launch,
+                                          color: linkColor, size: 15),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

@@ -91,9 +91,12 @@ AppBarTheme getAppBarTheme(Brightness brightness) {
   TextStyle textStyle = const TextStyle(color: Colors.white);
   IconThemeData iconThemeData = IconThemeData(color: iconColor);
   return AppBarTheme(
-      backgroundColor: bgColor,
-      titleTextStyle: textStyle,
-      iconTheme: iconThemeData);
+    backgroundColor: bgColor,
+    titleTextStyle: textStyle,
+    iconTheme: iconThemeData,
+    //add gradient in appbar theme
+    // flexibleSpace: Container(
+  );
 }
 
 InputDecorationTheme buildInputDecorationTheme(Brightness brightness) {

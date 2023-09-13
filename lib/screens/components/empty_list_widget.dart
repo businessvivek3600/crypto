@@ -9,7 +9,7 @@ class EmptyListWidget extends StatelessWidget {
     super.key,
     this.height = 300,
     required this.text,
-    required this.asset,
+    this.asset = 'empty_box.json',
   });
   final String text;
   final String asset;

@@ -377,14 +377,28 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const VerticalDivider(color: Colors.grey),
                       Expanded(
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Icon(Icons.currency_exchange, color: textColor),
-                              bodyMedText('Buy', context, color: textColor)
-                            ],
+                        child: GestureDetector(
+                          onTap: () {
+                            String url =
+                                'https://onramp.money/main/buy/?appId=1&walletAddress=0x79a8c0bDdb40Efbf0B461F0403f9A148f0d6a800&fiatAmount=1000&fiatType=1&region=1&paymentMethod=1&redirectUrl=https://zeblock.io/order?address=0x79a8c0bDdb40Efbf0B461F0403f9A148f0d6a800';
+
+                            context
+                                .pushNamed(RouteName.explore, queryParameters: {
+                              'url': url,
+                              "enableSearch": '1',
+                              "allowBack": '1',
+                              "allowCopy": '0',
+                            });
+                          },
+                          child: Container(
+                            color: Colors.transparent,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Icon(Icons.currency_exchange, color: textColor),
+                                bodyMedText('Buy', context, color: textColor)
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -699,3 +713,34 @@ void showCustomBottomSheet(BuildContext context) {
     },
   );
 }
+
+class _SliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _SliverPersistentHeaderDelegate({required this.child});
+  final Widget child;
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+        height: 50,
+        // decoration: BoxDecoration(gradient: buildAppbarGradient()),
+        child: child);
+  }
+
+  @override
+  double get maxExtent => 50;
+
+  @override
+  double get minExtent => 50;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    // TODO: implement shouldRebuild
+    throw UnimplementedError();
+  }
+}
+
+buildAppbarGradient({List<Color>? colors}) => LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.topRight,
+      colors: colors ?? [Colors.blue, Colors.green],
+    );

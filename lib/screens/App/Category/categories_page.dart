@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../../../route_management/route_name.dart';
 import '../../../utils/default_logger.dart';
 import '../../../widgets/animate_searchbar_widget.dart';
-import '../../components/service_card_widget.dart';
 import '/utils/sized_utils.dart';
 
 import '../../../constants/asset_constants.dart';
@@ -80,7 +79,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: titleLargeText(searchClosed ? 'All Categories' : '',context),
+        title: titleLargeText(searchClosed ? 'All Categories' : '', context),
         automaticallyImplyLeading: searchClosed,
         actions: [
           AnimSearchBar(
@@ -141,7 +140,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     assetImages(PNGAssets.appLogo),
-                    capText('Categor',context)
+                    capText('Categor', context)
                   ],
                 ),
               ),

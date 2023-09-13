@@ -1,15 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:elegant_notification/resources/arrays.dart';
+import 'package:elegant_notification/resources/colors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/constants/app_const.dart';
 import '/providers/web_view_provider.dart';
 import '/utils/default_logger.dart';
-import '/utils/my_advanved_toasts.dart';
 import '/utils/my_dialogs.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
@@ -22,80 +23,31 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../functions/functions.dart';
 import '../repo_injection.dart';
 
-const String kNavigationExamplePage = '''
-<!DOCTYPE html><html>
-<head><title>Navigation Delegate Example</title></head>
-<body>
-<p>
-The navigation delegate is set to block navigation to the youtube website.
-</p>
-<ul>
-<ul><a href="https://www.youtube.com/">https://www.youtube.com/</a></ul>
-<ul><a href="https://www.google.com/">https://www.google.com/</a></ul>
-</ul>
-</body>
-</html>
-''';
-
-const String kLocalExamplePage = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<title>Load file or HTML string example</title>
-</head>
-<body>
-
-<h1>Local demo page</h1>
-<p>
-  This is an example page used to demonstrate how to load a local file or HTML
-  string using the <a href="https://pub.dev/packages/webview_flutter">Flutter
-  webview</a> plugin.
-</p>
-
-</body>
-</html>
-''';
-
-const String kTransparentBackgroundPage = '''
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>Transparent background test</title>
-  </head>
-  <style type="text/css">
-    body { background: transparent; margin: 0; padding: 0; }
-    #container { position: relative; margin: 0; padding: 0; width: 100vw; height: 100vh; }
-    #shape { background: red; width: 200px; height: 200px; margin: 0; padding: 0; position: absolute; top: calc(50% - 100px); left: calc(50% - 100px); }
-    p { text-align: center; }
-  </style>
-  <body>
-    <div id="container">
-      <p>Transparent background test</p>
-      <div id="shape"></div>
-    </div>
-  </body>
-  </html>
-''';
-
 class WebViewExample extends StatefulWidget {
-  const WebViewExample(
-      {super.key,
-      this.url,
-      this.showAppBar = '1',
-      this.showToast = '1',
-      this.changeOrientation = '0'});
+  const WebViewExample({
+    super.key,
+    this.url,
+    this.showAppBar = '1',
+    this.showToast = '1',
+    this.changeOrientation = '0',
+    this.allowBack = false,
+    this.enableSearch = false,
+    this.allowCopy = true,
+  });
   final String? url;
   final String showAppBar;
   final String showToast;
   final String changeOrientation;
+  final bool enableSearch;
+  final bool allowBack;
+  final bool allowCopy;
   @override
   State<WebViewExample> createState() => _WebViewExampleState();
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
-  var webViewProvider = sl.get<WebViewProvider>();
-  double loadingProgress = 0;
-  String? currentUrl;
+  var provider = sl.get<WebViewProvider>();
+  // double loadingProgress = 0;
   late final PlatformWebViewControllerCreationParams params;
 
   Future<bool> willPop(WebViewProvider provider) async {
@@ -107,18 +59,21 @@ class _WebViewExampleState extends State<WebViewExample> {
       if (await controller.canGoBack()) {
         await controller.goBack();
       } else {
-        errorLog('will back wait $willBack');
-        await MyDialogs.showCustomDialogs<bool>(
-          context,
-          title: 'Leave ',
-          desc: 'Are you sure to go back?',
-          dismissible: true,
-          backgroundColor: Colors.white,
-          onConfirm: () {
-            willBack = true;
-            return null;
-          },
-        );
+        if (!widget.allowBack) {
+          await MyDialogs.showCustomDialogs<bool>(
+            context,
+            title: 'Leave ',
+            desc: 'Are you sure to go back?',
+            dismissible: true,
+            backgroundColor: Colors.white,
+            onConfirm: () {
+              willBack = true;
+              return null;
+            },
+          );
+        } else {
+          willBack = true;
+        }
       }
     }
     errorLog('will back $willBack');
@@ -137,97 +92,12 @@ class _WebViewExampleState extends State<WebViewExample> {
     initController();
   }
 
-  initController() async {
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-          allowsInlineMediaPlayback: true,
-          mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{});
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      // ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (int progress) {
-          setState(() {
-            loadingProgress = progress.toDouble();
-          });
-          infoLog(
-              'WebView is loading (progress : $progress%)  (loadingProgress : $loadingProgress%)');
-        },
-        onPageStarted: (String url) {
-          infoLog('Page started loading: $url');
-        },
-        onPageFinished: (String url) {
-          infoLog('Page finished loading: $url');
-          setState(() {
-            loadingProgress = 0.toDouble();
-          });
-        },
-        onWebResourceError: (WebResourceError error) {
-          infoLog('''
-                      Page resource error:
-                      code: ${error.errorCode}
-                      description: ${error.description}
-                      errorType: ${error.errorType}
-                      isForMainFrame: ${error.isForMainFrame}
-          ''');
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            infoLog('blocking navigation to ${request.url}');
-            return NavigationDecision.prevent;
-          }
-          infoLog('allowing navigation to ${request.url}');
-          return NavigationDecision.navigate;
-        },
-        onUrlChange: (UrlChange change) async {
-          infoLog('url change to ${change.url}');
-          currentUrl = await webViewProvider.controller!.currentUrl();
-          setState(() {});
-          // ignore: use_build_context_synchronously
-          if (widget.showToast == '1') {
-            AdvanceToasts.showNormalElegant(context,
-                'Current url ${await webViewProvider.controller?.currentUrl()}',
-                notificationType: NotificationType.success,
-                showLeading: false,
-                showProgressIndicator: false);
-          }
-        },
-      ))
-      ..addJavaScriptChannel('Toaster',
-          onMessageReceived: (JavaScriptMessage message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-            message.message,
-            style: const TextStyle(color: Colors.red),
-          )),
-        );
-      })
-      ..loadRequest(Uri.parse(widget.url ?? AppConst.siteUrl));
-
-    // #docregion platform_features
-    if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(false);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
-    }
-
-    webViewProvider.controller = controller;
-    setState(() {});
-  }
-
   @override
   void dispose() {
-    webViewProvider.controller = null;
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    provider.controller = null;
+    provider.setUrl(null);
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     super.dispose();
   }
 
@@ -253,22 +123,32 @@ class _WebViewExampleState extends State<WebViewExample> {
 
   AppBar buildAppBar(BuildContext context, WebViewProvider provider) {
     return AppBar(
-      title: bodyLargeText(AppConst.appName,context, maxLines: 1),
+      title: bodyMedText(provider.title ?? '', context,
+          maxLines: 1, color: Colors.white),
       automaticallyImplyLeading: false,
+      leadingWidth: 30,
       leading: IconButton(
           onPressed: () async {
             if (provider.controller != null &&
                 !(await provider.controller!.canGoBack())) {
-              // ignore: use_build_context_synchronously
               Navigator.pop(context);
             } else {
-              // ignore: use_build_context_synchronously
-              MyDialogs.showPanaraConfirmDialog(context,
-                  title: 'Leave page',
-                  desc: 'Are you sure to leave the session?', onConfirm: () {
+              if (!widget.allowBack) {
+                MyDialogs.showCustomDialogs<bool>(
+                  context,
+                  title: 'Leave ',
+                  desc: 'Are you sure to go back?',
+                  dismissible: true,
+                  onConfirm: () {
+                    Future.delayed(const Duration(milliseconds: 500),
+                        () => Navigator.pop(context));
+                    return null;
+                  },
+                );
+              } else {
                 Future.delayed(const Duration(milliseconds: 500),
                     () => Navigator.pop(context));
-              });
+              }
             }
           },
           icon: const Icon(Icons.arrow_back_rounded)),
@@ -276,47 +156,202 @@ class _WebViewExampleState extends State<WebViewExample> {
       actions: provider.controller != null
           ? <Widget>[
               NavigationControls(webViewController: provider.controller!),
-              SampleMenu(webViewController: provider.controller!),
+              // SampleMenu(webViewController: provider.controller!),
             ]
           : null,
       bottom: provider.controller != null
           ? PreferredSize(
-              preferredSize: const Size(double.maxFinite, 20),
+              preferredSize: const Size(double.maxFinite, 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (currentUrl != null)
+                  if (provider.url != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsetsDirectional.symmetric(
-                              horizontal: 8.0, vertical: 5),
+                          padding: const EdgeInsetsDirectional.only(
+                              start: 8.0, end: 8, bottom: 5),
                           child: Row(
                             children: [
-                              const Icon(Icons.lock, size: 10),
-                              width5(),
-                              Expanded(
-                                  child: capText(currentUrl!,context,
-                                      maxLines: 1)),
-                              width5(),
                               GestureDetector(
-                                  onTap: () => copyToClipboardAndShowToast(
-                                      currentUrl!,context),
-                                  child: const Icon(Icons.copy, size: 15)),
-                              width5(),
+                                onTap: () => provider.controller?.reload(),
+                                child: const Padding(
+                                  padding: EdgeInsetsDirectional.all(8.0),
+                                  child: Icon(Icons.replay,
+                                      size: 14, color: Colors.white),
+                                ),
+                              ),
+                              Expanded(
+                                child: CupertinoTextField(
+                                  controller: provider.textEditingController,
+                                  readOnly: !widget.enableSearch,
+                                  placeholder: 'Search',
+                                  padding: const EdgeInsets.all(5),
+                                  prefix: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(CupertinoIcons.lock,
+                                          color: Colors.white, size: 15)),
+                                  textInputAction: TextInputAction.search,
+                                  cursorColor: Colors.white,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  onSubmitted: widget.enableSearch
+                                      ? (value) => searchWeb()
+                                      : null,
+                                  suffix: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: provider.textEditingController
+                                                    .text.isNotEmpty &&
+                                                provider.controller != null &&
+                                                widget.enableSearch
+                                            ? searchWeb
+                                            : null,
+                                        child: const Icon(CupertinoIcons.search,
+                                            color: Colors.white, size: 15),
+                                      ),
+                                      width10(),
+                                      GestureDetector(
+                                          onTap: widget.enableSearch
+                                              ? () {
+                                                  provider
+                                                      .setTextEditingController(
+                                                          '');
+                                                  // if (provider.controller != null) {
+                                                  //   provider.controller
+                                                  //       ?.runJavaScript(
+                                                  //           'window.stop();');
+                                                  // }
+                                                }
+                                              : null,
+                                          child: const Icon(
+                                              CupertinoIcons
+                                                  .clear_thick_circled,
+                                              color: Colors.white,
+                                              size: 15)),
+                                      width10(),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (widget.allowCopy)
+                                Row(
+                                  children: [
+                                    width5(),
+                                    GestureDetector(
+                                        onTap: () =>
+                                            copyToClipboardAndShowToast(
+                                                provider.url ?? '', context),
+                                        child: const Icon(
+                                          CupertinoIcons.doc_on_clipboard,
+                                          color: Colors.white,
+                                          // size: 15,
+                                        )),
+                                    width5(),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
                         height5(),
                       ],
                     ),
-                  if (loadingProgress > 0)
-                    LinearProgressIndicator(value: loadingProgress / 100),
+                  if (provider.loadingProgress > 0)
+                    LinearProgressIndicator(
+                      value: provider.loadingProgress / 100,
+                      backgroundColor: greyColor,
+                    ),
                 ],
               ))
           : null,
     );
+  }
+
+  Future<String?> _getTitle(WebViewController controller) async {
+    final title = await controller.getTitle();
+    print(title);
+    return title;
+  }
+
+  void searchWeb() {
+    String url = provider.textEditingController.text.startsWith('https:') ||
+            provider.textEditingController.text.startsWith('http:')
+        ? provider.textEditingController.text
+        : 'https://www.google.com/search?q=${provider.textEditingController.text}';
+    provider.controller!.loadRequest(Uri.parse(url));
+    primaryFocus?.unfocus();
+  }
+
+  initController() async {
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{});
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
+    }
+    final WebViewController controller =
+        WebViewController.fromPlatformCreationParams(params);
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (int progress) {
+          provider.setLoadinProgress(progress.toDouble());
+          infoLog('loadingProgress : ${provider.loadingProgress}%)');
+        },
+        onPageStarted: (String url) {
+          infoLog('Page started loading: $url');
+        },
+        onPageFinished: (String url) {
+          provider.setTitle();
+          provider.setLoadinProgress(0);
+          infoLog('Page finished loading: $url');
+        },
+        onWebResourceError: (WebResourceError error) {
+          errorLog('''
+                      Page resource error:
+                      code: ${error.errorCode}
+                      description: ${error.description}
+                      errorType: ${error.errorType}
+                      isForMainFrame: ${error.isForMainFrame}
+          ''', 'onWebResourceError');
+        },
+        onNavigationRequest: (NavigationRequest request) {
+          infoLog('onNavigationRequest : ${request}');
+          return NavigationDecision.navigate;
+        },
+        onUrlChange: (UrlChange change) async {
+          provider.setUrl(change.url);
+          infoLog('url change to ${change.url}');
+        },
+      ))
+      ..addJavaScriptChannel('Toaster',
+          onMessageReceived: (JavaScriptMessage message) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+            message.message,
+            style: const TextStyle(color: Colors.red),
+          )),
+        );
+      })
+      ..loadRequest(Uri.parse(widget.url ?? AppConst.siteUrl));
+
+    // #docregion platform_features
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(false);
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
+
+    provider.controller = controller;
+    setState(() {});
   }
 
   Widget favoriteButton(WebViewProvider provider) {
@@ -619,7 +654,7 @@ class NavigationControls extends StatelessWidget {
         GestureDetector(
           child: const Padding(
             padding: EdgeInsetsDirectional.all(8.0),
-            child: Icon(Icons.arrow_back_ios, size: 14),
+            child: Icon(Icons.arrow_back_ios_new_rounded, size: 15),
           ),
           onTap: () async {
             if (await webViewController.canGoBack()) {
@@ -636,7 +671,7 @@ class NavigationControls extends StatelessWidget {
         GestureDetector(
           child: const Padding(
             padding: EdgeInsetsDirectional.all(8.0),
-            child: Icon(Icons.arrow_forward_ios, size: 14),
+            child: Icon(Icons.arrow_forward_ios_rounded, size: 15),
           ),
           onTap: () async {
             if (await webViewController.canGoForward()) {
@@ -650,14 +685,69 @@ class NavigationControls extends StatelessWidget {
             }
           },
         ),
-        GestureDetector(
-          child: const Padding(
-            padding: EdgeInsetsDirectional.all(8.0),
-            child: Icon(Icons.replay, size: 14),
-          ),
-          onTap: () => webViewController.reload(),
-        ),
+        // GestureDetector(
+        //   child: const Padding(
+        //     padding: EdgeInsetsDirectional.all(8.0),
+        //     child: Icon(Icons.replay, size: 14),
+        //   ),
+        //   onTap: () => webViewController.reload(),
+        // ),
       ],
     );
   }
 }
+
+const String kNavigationExamplePage = '''
+<!DOCTYPE html><html>
+<head><title>Navigation Delegate Example</title></head>
+<body>
+<p>
+The navigation delegate is set to block navigation to the youtube website.
+</p>
+<ul>
+<ul><a href="https://www.youtube.com/">https://www.youtube.com/</a></ul>
+<ul><a href="https://www.google.com/">https://www.google.com/</a></ul>
+</ul>
+</body>
+</html>
+''';
+
+const String kLocalExamplePage = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Load file or HTML string example</title>
+</head>
+<body>
+
+<h1>Local demo page</h1>
+<p>
+  This is an example page used to demonstrate how to load a local file or HTML
+  string using the <a href="https://pub.dev/packages/webview_flutter">Flutter
+  webview</a> plugin.
+</p>
+
+</body>
+</html>
+''';
+
+const String kTransparentBackgroundPage = '''
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Transparent background test</title>
+  </head>
+  <style type="text/css">
+    body { background: transparent; margin: 0; padding: 0; }
+    #container { position: relative; margin: 0; padding: 0; width: 100vw; height: 100vh; }
+    #shape { background: red; width: 200px; height: 200px; margin: 0; padding: 0; position: absolute; top: calc(50% - 100px); left: calc(50% - 100px); }
+    p { text-align: center; }
+  </style>
+  <body>
+    <div id="container">
+      <p>Transparent background test</p>
+      <div id="shape"></div>
+    </div>
+  </body>
+  </html>
+''';

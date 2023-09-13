@@ -22,8 +22,8 @@ class _DashBottomNavState extends State<DashBottomNav> {
         title: 'Wallet',
       ),
       TabItem(
-        icon: Icons.chat_rounded,
-        title: 'Chat',
+        icon: Icons.history,
+        title: 'Transactions',
       ),
       TabItem(
         icon: Icons.swap_horiz_rounded,

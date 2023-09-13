@@ -155,21 +155,25 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> refreshMyWallets() async {
-    List<Wallet> myWallets = user.wallet ?? [];
-    for (var item in myWallets) {
-      Map<String, dynamic>? data = await sl
-          .get<WalletProvider>()
-          .getBalance(item.tokenName ?? '', item.walletAddress ?? '');
-      if (data != null) {
-        try {
-          item.balance = (data['balance'] ?? 0).toDouble();
-        } catch (e) {
-          errorLog(e.toString(), 'verify');
+    if (isOnline) {
+      List<Wallet> myWallets = user.wallet ?? [];
+      for (var item in myWallets) {
+        Map<String, dynamic>? data = await sl
+            .get<WalletProvider>()
+            .getBalance(item.tokenName ?? '', item.walletAddress ?? '');
+        if (data != null) {
+          try {
+            item.balance = (data['balance'] ?? 0).toDouble();
+          } catch (e) {
+            errorLog(e.toString(), 'verify');
+          }
         }
       }
+      user.wallet = myWallets;
+      await updateUser(user);
+    } else {
+      Toasts.fToast('No internet connection!');
     }
-    user.wallet = myWallets;
-    await updateUser(user);
   }
 
   Future<void> saveLoginToken(String token) async =>

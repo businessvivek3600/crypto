@@ -2,14 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/screens/BottomNav/dash_setting_page.dart';
 import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
 
@@ -69,7 +61,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: titleLargeText('Add Address',context),
+          title: titleLargeText('Add Address', context),
           actions: const [ToggleBrightnessButton()],
         ),
         body: ListView(
@@ -131,7 +123,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                     items: _states.map((state) {
                       return DropdownMenuItem<String>(
                         value: state,
-                        child: bodyMedText(state,context),
+                        child: bodyMedText(state, context),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -179,13 +171,13 @@ class _AddNewAddressState extends State<AddNewAddress> {
                   ),
                   height20(),
                   const SizedBox(height: 16),
-                  bodyMedText('Type of Address',context),
+                  bodyMedText('Type of Address', context),
                   height5(),
                   Wrap(
                     spacing: 8,
                     children: [
                       ActionChip(
-                        label: bodyMedText('Home',context),
+                        label: bodyMedText('Home', context),
                         onPressed: () {
                           setState(() {
                             _selectedChips.contains('Home')
@@ -198,7 +190,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                             : null,
                       ),
                       ActionChip(
-                        label: bodyMedText('Work',context),
+                        label: bodyMedText('Work', context),
                         onPressed: () {
                           setState(() {
                             _selectedChips.contains('Work')
