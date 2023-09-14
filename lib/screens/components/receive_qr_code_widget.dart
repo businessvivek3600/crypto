@@ -2,7 +2,7 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
-import 'package:my_global_tools/utils/picture_utils.dart';
+import '/utils/picture_utils.dart';
 import '/utils/default_logger.dart';
 import 'package:share_plus/share_plus.dart';
 

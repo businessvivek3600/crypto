@@ -1,7 +1,7 @@
 // create a database to store the transactions
 import 'dart:convert';
 
-import 'package:my_global_tools/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SqlDb {

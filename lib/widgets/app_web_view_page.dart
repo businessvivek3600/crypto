@@ -8,6 +8,8 @@ import 'package:elegant_notification/resources/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../screens/BottomNav/transaction.dart';
+import '../screens/components/appbar.dart';
 import '/constants/app_const.dart';
 import '/providers/web_view_provider.dart';
 import '/utils/default_logger.dart';
@@ -121,8 +123,8 @@ class _WebViewExampleState extends State<WebViewExample> {
     );
   }
 
-  AppBar buildAppBar(BuildContext context, WebViewProvider provider) {
-    return AppBar(
+  PreferredSize buildAppBar(BuildContext context, WebViewProvider provider) {
+    return buildCustomAppBar(
       title: bodyMedText(provider.title ?? '', context,
           maxLines: 1, color: Colors.white),
       automaticallyImplyLeading: false,
@@ -153,6 +155,8 @@ class _WebViewExampleState extends State<WebViewExample> {
           },
           icon: const Icon(Icons.arrow_back_rounded)),
       elevation: 10,
+      height: kToolbarHeight + 40,
+      // useGradient: false,
       actions: provider.controller != null
           ? <Widget>[
               NavigationControls(webViewController: provider.controller!),

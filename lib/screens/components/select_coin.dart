@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_global_tools/providers/auth_provider.dart';
+import '/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants/asset_constants.dart';

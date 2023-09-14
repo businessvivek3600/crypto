@@ -3,7 +3,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/models/coin_model.dart';
+import '/models/coin_model.dart';
 import '../components/select_coin.dart';
 import '/route_management/route_name.dart';
 import '/screens/BottomNav/dash_setting_page.dart';

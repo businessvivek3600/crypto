@@ -5,7 +5,7 @@ import 'dart:math';
 
 import 'package:chatview/chatview.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/models/coin_model.dart';
+import '/models/coin_model.dart';
 import '../components/select_coin.dart';
 import '/constants/asset_constants.dart';
 import '/utils/default_logger.dart';

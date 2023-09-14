@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_global_tools/screens/BottomNav/transaction.dart';
 import '../Bookings/booking_details_page.dart';
-import '../BottomNav/bookings.dart';
 import '../BottomNav/dash_home_page.dart';
+import '../BottomNav/transaction.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';
 import '/providers/setting_provider.dart';
@@ -13,7 +12,6 @@ import 'package:provider/provider.dart';
 
 import '../../services/auth_service.dart';
 import 'Booking/slot_booking.dart';
-import 'Shop/shopDetailsPage.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});

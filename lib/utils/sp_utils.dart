@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:my_global_tools/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 
 import '/constants/sp_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';

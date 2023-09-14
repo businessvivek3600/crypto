@@ -88,6 +88,9 @@ dependencies:
   qr_code_scanner: ^1.0.1
   crypto: ^3.0.3
   sqflite: ^2.3.0
+  syncfusion_flutter_charts: ^22.2.12
+  candlesticks: ^2.1.0
+  web_socket_channel: ^2.4.0
 
 
   #notifications

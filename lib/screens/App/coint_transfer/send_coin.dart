@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/utils/color.dart';
+import '../../BottomNav/transaction.dart';
+import '../../components/appbar.dart';
+import '/utils/color.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../functions/sqlDatabase.dart';
 import '/providers/auth_provider.dart';
@@ -417,14 +419,15 @@ class _SendCoinPageState extends State<SendCoinPage> {
     }
   }
 
-  AppBar buildAppBar(BuildContext context, WalletProvider provider) {
-    return AppBar(
+  PreferredSize buildAppBar(BuildContext context, WalletProvider provider) {
+    return buildCustomAppBar(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
               bottomRight: Radius.circular(20),
               bottomLeft: Radius.circular(20))),
       title: titleLargeText('Send', context, color: Colors.white),
       actions: const [ToggleBrightnessButton()],
+      height: kToolbarHeight + 30,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(30),
         child: widget.data != null
@@ -832,7 +835,12 @@ class ReceiptDialog extends StatelessWidget {
                           height10(),
                           TextButton(
                             onPressed: () {
-                              sl.get<AuthProvider>().refreshMyWallets();
+                              sl.get<AuthProvider>().refreshMyWallets(wallets: [
+                                sl.get<AuthProvider>().user.wallet!.firstWhere(
+                                    (element) =>
+                                        element.walletAddress ==
+                                        data['address'])
+                              ]);
                               context.goNamed(RouteName.home);
                             },
                             child: const Text('Close'),

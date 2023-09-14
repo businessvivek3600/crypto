@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/providers/WalletProvider.dart';
+import '/providers/WalletProvider.dart';
 import '../repo_injection.dart';
 import '/functions/functions.dart';
 import '/models/user/user_data_model.dart';
@@ -154,10 +154,14 @@ class AuthProvider with ChangeNotifier {
     return await authRepo.getUser();
   }
 
-  Future<void> refreshMyWallets() async {
+  Future<void> refreshMyWallets({List<Wallet>? wallets}) async {
+    int count = 0;
     if (isOnline) {
       List<Wallet> myWallets = user.wallet ?? [];
-      for (var item in myWallets) {
+      for (var item in (wallets == null || wallets.isEmpty
+          ? myWallets
+          : myWallets.where((element) => wallets.contains(element)))) {
+        count++;
         Map<String, dynamic>? data = await sl
             .get<WalletProvider>()
             .getBalance(item.tokenName ?? '', item.walletAddress ?? '');
@@ -173,6 +177,11 @@ class AuthProvider with ChangeNotifier {
       await updateUser(user);
     } else {
       Toasts.fToast('No internet connection!');
+    }
+    if (count == 0) {
+      Toasts.fToast('No wallet found!');
+    } else {
+      Toasts.fToast('$count Wallets refreshed successfully!');
     }
   }
 

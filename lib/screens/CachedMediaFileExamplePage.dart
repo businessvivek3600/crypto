@@ -1,6 +1,4 @@
-import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -195,4 +193,3 @@ class _RandomAvatarPageState extends State<RandomAvatarPage> {
     );
   }
 }
-

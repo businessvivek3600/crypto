@@ -23,8 +23,13 @@ class EmptyListWidget extends StatelessWidget {
           children: [
             height5(),
             Expanded(child: assetLottie(asset)),
-            titleLargeText(text, context,
-                color: Colors.grey, fontWeight: FontWeight.w500),
+            titleLargeText(
+              text,
+              context,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+              textAlign: TextAlign.center,
+            ),
             height50(),
           ],
         ));

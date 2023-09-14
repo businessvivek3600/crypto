@@ -21,6 +21,7 @@ class RouteName {
   static const String sendCoin = 'sendCoin';
   static const String coinChat = 'coinChat';
   static const String tx = 'tx';
+  static const String chart = 'chart';
 
   static const String categories = 'categories';
   static const String categoryDetail = 'categoryDetail';

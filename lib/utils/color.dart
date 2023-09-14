@@ -133,16 +133,32 @@ Color generateRandomLightColor() {
 }
 
 LinearGradient globalPageGradient() {
-  return LinearGradient(colors: [
-    getTheme.colorScheme.primary.withOpacity(1),
-    getTheme.colorScheme.primary.withOpacity(0.9),
-    getTheme.colorScheme.primary.withOpacity(0.8),
-    getTheme.colorScheme.primary.withOpacity(0.7),
-    getTheme.colorScheme.primary.withOpacity(0.6),
-    getTheme.colorScheme.primary.withOpacity(0.5),
-    getTheme.colorScheme.primary.withOpacity(0.4),
-    getTheme.colorScheme.primary.withOpacity(0.3),
-    getTheme.colorScheme.primary.withOpacity(0.2),
-    getTheme.colorScheme.primary.withOpacity(0.1),
-  ], begin: Alignment.topCenter, end: Alignment.bottomCenter);
+  return LinearGradient(
+      colors: [
+        getTheme.colorScheme.primary.withOpacity(.1),
+        getTheme.colorScheme.primary.withOpacity(0.2),
+        getTheme.colorScheme.primary.withOpacity(0.3),
+        getTheme.colorScheme.primary.withOpacity(0.4),
+        getTheme.colorScheme.primary.withOpacity(0.6),
+        getTheme.colorScheme.primary.withOpacity(0.5),
+        getTheme.colorScheme.primary.withOpacity(0.4),
+        getTheme.colorScheme.primary.withOpacity(0.3),
+        getTheme.colorScheme.primary.withOpacity(0.2),
+        getTheme.colorScheme.primary.withOpacity(0.1),
+      ].reversed.toList(),
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter);
+}
+
+buildAppbarGradient({List<Color>? colors}) {
+  // Color color = getTheme.colorScheme.primary;
+  // Color color2 = getTheme.colorScheme.secondary;
+  Color color = lightPrimary;
+  Color color2 = darkPrimary;
+  bool isDark = getTheme.brightness == Brightness.dark;
+  return LinearGradient(
+    begin: Alignment.bottomLeft,
+    end: Alignment.bottomRight,
+    colors: colors ?? [isDark ? color : color2, isDark ? color2 : color],
+  );
 }

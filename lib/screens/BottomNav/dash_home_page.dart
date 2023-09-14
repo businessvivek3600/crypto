@@ -1,11 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:my_global_tools/models/user/user_data_model.dart';
-import 'package:my_global_tools/utils/loader.dart';
-import 'package:my_global_tools/utils/sp_utils.dart';
+import '../../utils/color.dart';
+import '../components/appbar.dart';
+import '/models/user/user_data_model.dart';
+import '/utils/loader.dart';
+import '/utils/sp_utils.dart';
 import '../../providers/WalletProvider.dart';
 import '../components/receive_qr_code_widget.dart';
 import '../components/select_coin.dart';
@@ -31,9 +35,10 @@ import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/auth_service.dart';
+import 'transaction.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -72,7 +77,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     infoLog(SpUtils().getMnemonics.toString(), 'mnemonics');
-    final StreamAuth info = StreamAuthScope.of(context);
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return Consumer<DashboardProvider>(
@@ -144,6 +148,15 @@ class _HomePageState extends State<HomePage> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ListTile(
+                      onTap: !loading
+                          ? () {
+                              infoLog(coins!.toJson().toString(), 'coins');
+                              context.pushNamed(RouteName.chart,
+                                  queryParameters: {
+                                    'symbol': '${coins.symbol}${'usdt'}'
+                                  });
+                            }
+                          : null,
                       leading: loading
                           ? buildShimmer(
                               w: 60.0, h: 60.0, shape: BoxShape.circle)
@@ -231,7 +244,9 @@ class _HomePageState extends State<HomePage> {
                 right: 0,
                 child: Container(
                     decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  // color: Theme.of(context).colorScheme.primary,
+                  gradient: buildAppbarGradient(),
+
                   borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(15),
                       bottomRight: Radius.circular(15)),
@@ -506,17 +521,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  SliverAppBar buildAppBar(BuildContext context, AuthProvider authProvider) {
+  buildAppBar(BuildContext context, AuthProvider authProvider) {
     double walletBalance = 0;
     if (authProvider.user.wallet != null) {
       for (var wallet in authProvider.user.wallet!) {
         walletBalance += wallet.balance ?? 0;
       }
     }
-    return SliverAppBar(
+    return buildCustomAppBar(
       // title: Text(getLang.helloWorld),
-      expandedHeight: 100,
+      // expandedHeight: 100,
+      height: 120,
       pinned: false,
+      isSliver: true,
       title: Row(
         children: [
           CircleAvatar(
@@ -622,7 +639,6 @@ class _HomePageState extends State<HomePage> {
 }
 
 class MySearchDelegate extends SearchDelegate {
-  @override
   List<String> get suggestions => ["One", "Two", "Three"];
 
   @override
@@ -738,9 +754,3 @@ class _SliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
     throw UnimplementedError();
   }
 }
-
-buildAppbarGradient({List<Color>? colors}) => LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.topRight,
-      colors: colors ?? [Colors.blue, Colors.green],
-    );

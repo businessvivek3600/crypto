@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_global_tools/widgets/app_web_view_page.dart';
+import '/widgets/app_web_view_page.dart';
 
 class TransactionDetailsScreen extends StatelessWidget {
   const TransactionDetailsScreen({super.key, this.data});
@@ -11,6 +11,7 @@ class TransactionDetailsScreen extends StatelessWidget {
       // url: 'https://onramp.money/main/buy/?appId=1',
       enableSearch: false,
       allowBack: true,
+      allowCopy: false,
     );
     return Scaffold(
       appBar: AppBar(

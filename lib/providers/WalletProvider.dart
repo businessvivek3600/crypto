@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
-import 'package:my_global_tools/models/coin_model.dart';
-import 'package:my_global_tools/utils/sp_utils.dart';
+import '/models/coin_model.dart';
+import '/utils/sp_utils.dart';
 import '/constants/api_const.dart';
 import '/functions/repositories/wallet_repo.dart';
 import '/models/recent_users.dart';

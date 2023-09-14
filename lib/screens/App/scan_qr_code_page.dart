@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 import '/functions/functions.dart';
 import '/utils/sized_utils.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';

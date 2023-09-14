@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/widgets/MultiStageButton.dart';
+import '/widgets/MultiStageButton.dart';
 import '/models/user/user_data_model.dart';
 import '/services/auth_service.dart';
 import '../../utils/color.dart';

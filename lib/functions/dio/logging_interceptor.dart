@@ -42,9 +42,11 @@ class LoggingInterceptor extends InterceptorsWrapper {
   @override
   Future onError(DioException err, ErrorInterceptorHandler handler) async {
     errorLog(
-        "ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}  response: ${err.response}  extra :${err}");
+        "ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}  response: ${err.response}  extra :${err} response-type: ${err.response?.runtimeType}}");
     if (err.response != null) {
-      Toasts.fToast(err.response!.data?['message']);
+      Toasts.fToast(err.response?.data['msg'] ??
+          err.response?.data['message'] ??
+          'Something went wrong');
     }
     return super.onError(err, handler);
   }

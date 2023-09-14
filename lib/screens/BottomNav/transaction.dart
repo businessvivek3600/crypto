@@ -12,9 +12,11 @@ import 'package:my_global_tools/utils/date_utils.dart';
 import 'package:my_global_tools/utils/default_logger.dart';
 import '../../route_management/route_name.dart';
 import '../../functions/sqlDatabase.dart';
+import '../components/appbar.dart';
 import '/screens/BottomNav/dash_setting_page.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
+import 'dash_home_page.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -28,8 +30,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildCustomAppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
+        // elevation: 0,
+        // backgroundColor: Colors.transparent,
         title: titleLargeText('Transactions', context, color: Colors.white),
         actions: const [ToggleBrightnessButton()],
       ),
@@ -117,7 +119,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
       bool condition = list.entries
               .any((item) => item.key.split(' ')[0] == date.split(' ')[0]) ==
           false;
-      warningLog(condition.toString());
+      // warningLog(condition.toString());
       if (condition) {
         list.addAll({
           date: [transaction]
@@ -130,7 +132,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
             .add(transaction);
       }
     }
-    errorLog(list.toString());
+    // errorLog(list.toString());
     data = list;
     setState(() {});
   }
@@ -151,13 +153,13 @@ class _TransactionListViewState extends State<_TransactionListView> {
   }
 
   SliverStickyHeader buildWithHeader(
-      MapEntry<String, List<Map<String, dynamic>>> item) {
+      MapEntry<String, List<Map<String, dynamic>>> items) {
     return SliverStickyHeader.builder(
-      builder: (context, state) => buildHeader(context, item),
+      builder: (context, state) => buildHeader(context, items),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, i) {
-            Map<String, dynamic> data = jsonDecode(item.value[i]['data']);
+            Map<String, dynamic> data = jsonDecode(items.value[i]['data']);
             // infoLog(data.toString());
             return Padding(
               padding: EdgeInsets.symmetric(horizontal: paddingDefault),
@@ -269,7 +271,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
                               ),
                               capText(
                                   MyDateUtils.formatDate(
-                                      item.value[i]['created_at'] ?? '',
+                                      items.value[i]['created_at'] ?? '',
                                       'hh:mm a'),
                                   context,
                                   fontSize: 8),
@@ -278,7 +280,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
                         ],
                       ),
                     ),
-                    if (i < widget.data.length - 1)
+                    if (i < items.value.length - 1)
                       Divider(
                         thickness: 1,
                         color: getTheme.colorScheme.primary.withOpacity(0.2),
@@ -288,7 +290,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
               ),
             );
           },
-          childCount: item.value.length,
+          childCount: items.value.length,
         ),
       ),
     );
@@ -309,40 +311,4 @@ class _TransactionListViewState extends State<_TransactionListView> {
       ),
     );
   }
-}
-
-PreferredSize buildCustomAppBar(
-    {double? height,
-    double elevation = 0,
-    List<Color>? colors,
-    Color? backgroundColor,
-    List<Widget>? actions,
-    Widget? title,
-    Widget? leading,
-    PreferredSizeWidget? bottom,
-    bool centerTitle = true,
-    bool? automaticallyImplyLeading,
-    bool isSliver = false}) {
-  automaticallyImplyLeading =
-      automaticallyImplyLeading ?? (Platform.isIOS ? true : false);
-  return PreferredSize(
-    preferredSize: Size.fromHeight(height ?? kToolbarHeight),
-    child: Builder(builder: (context) {
-      return Container(
-        decoration: const BoxDecoration(
-            // gradient: buildAppbarGradient(colors: colors),
-            ),
-        child: AppBar(
-          // elevation: elevation,
-          // backgroundColor: backgroundColor ?? Colors.transparent,
-          title: title,
-          actions: actions,
-          leading: leading,
-          bottom: bottom,
-          centerTitle: centerTitle,
-          automaticallyImplyLeading: automaticallyImplyLeading!,
-        ),
-      );
-    }),
-  );
 }

@@ -1,9 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '/constants/app_const.dart';
 import '/functions/functions.dart';
 import '/route_management/route_name.dart';
-import '/route_management/route_path.dart';
 import '/utils/picture_utils.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
@@ -12,7 +13,6 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/setting_provider.dart';
-import '../../repo_injection.dart';
 import '../../route_management/route_animation.dart';
 import '../../services/auth_service.dart';
 import '../../utils/default_logger.dart';
@@ -309,7 +309,7 @@ class _DashSettingPageState extends State<DashSettingPage> {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(5),
-                child: Container(
+                child: SizedBox(
                   height: getWidth * 0.2,
                   width: getWidth * 0.2,
                   child: buildCachedNetworkImage(

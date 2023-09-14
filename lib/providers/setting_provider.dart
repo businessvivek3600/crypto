@@ -16,14 +16,14 @@ class SettingProvider extends ChangeNotifier {
   static const String tag = 'SettingProvider';
 
   // theme control
-  ThemeMode themeMode = ThemeMode.dark;
-  Future<ThemeMode> setThemeMode(BuildContext context) async{
+  ThemeMode themeMode = ThemeMode.light;
+  Future<ThemeMode> setThemeMode(BuildContext context) async {
     themeMode = await useLightMode(context) ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
     return themeMode;
   }
 
-  useLightMode(BuildContext context) async{
+  useLightMode(BuildContext context) async {
     switch (themeMode) {
       case ThemeMode.system:
         return View.of(context).platformDispatcher.platformBrightness ==

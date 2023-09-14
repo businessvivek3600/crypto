@@ -179,6 +179,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../screens/App/coin_chart.dart';
 import '../screens/App/transaction_details.dart';
 import '../screens/chat/ChatPageExample.dart';
 import '/models/recent_users.dart';
@@ -253,6 +254,12 @@ class MyRouter {
             _newRoute2(RouteName.tx, (GoRouterState state) {
               return TransactionDetailsScreen(
                 data: state.extra as Map<String, dynamic>?,
+              );
+            }, null),
+
+            _newRoute2(RouteName.chart, (GoRouterState state) {
+              return CoinChartPage(
+                symbol: state.queryParameters['symbol'],
               );
             }, null),
             _newRoute2(

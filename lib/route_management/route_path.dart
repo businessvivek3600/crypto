@@ -24,6 +24,7 @@ class RoutePath {
   static const String sendCoin = RouteName.sendCoin;
   static const String coinChat = RouteName.coinChat;
   static const String tx = RouteName.tx;
+  static const String chart = RouteName.chart;
 
   static const String categories = RouteName.categories;
   static const String categoryDetail = RouteName.categoryDetail;

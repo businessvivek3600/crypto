@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '/providers/connectivity_provider.dart';
-import '/utils/theme.dart';
 import '/repo_injection.dart';
 import '/services/auth_service.dart';
 

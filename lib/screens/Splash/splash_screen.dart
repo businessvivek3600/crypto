@@ -1,15 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '/providers/auth_provider.dart';
-import '../../repo_injection.dart';
 import '../../services/auth_service.dart';
-import '../../utils/my_toasts.dart';
-import '../../utils/sp_utils.dart';
 import '../Onboardings/on_boarding_page.dart';
 import '/route_management/route_path.dart';
 import '/utils/picture_utils.dart';
