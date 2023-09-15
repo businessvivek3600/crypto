@@ -337,7 +337,8 @@ class _HomePageState extends State<HomePage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Icon(Icons.send_rounded, color: textColor),
+                                assetImages(PNGAssets.send,
+                                    width: 30, height: 30),
                                 bodyMedText('Send', context, color: textColor)
                               ],
                             ),
@@ -382,7 +383,8 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Icon(Icons.qr_code_rounded, color: textColor),
+                                assetImages(PNGAssets.recieve,
+                                    width: 30, height: 30),
                                 bodyMedText('Receive', context,
                                     color: textColor)
                               ],
@@ -410,7 +412,8 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Icon(Icons.currency_exchange, color: textColor),
+                                assetImages(PNGAssets.buy,
+                                    width: 30, height: 30),
                                 bodyMedText('Buy', context, color: textColor)
                               ],
                             ),
@@ -424,7 +427,8 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Icon(Icons.swap_horiz, color: textColor),
+                              assetImages(PNGAssets.swap,
+                                  width: 30, height: 30),
                               bodyMedText('Swap', context, color: textColor)
                             ],
                           ),

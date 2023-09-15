@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../utils/color.dart';
@@ -12,7 +14,7 @@ buildCustomAppBar({
   Widget? title,
   Widget? leading,
   PreferredSizeWidget? bottom,
-  bool centerTitle = true,
+  bool? centerTitle,
   bool? automaticallyImplyLeading,
   bool isSliver = false,
   double? leadingWidth,
@@ -22,6 +24,7 @@ buildCustomAppBar({
   bool? pinned,
 }) {
   automaticallyImplyLeading = automaticallyImplyLeading;
+  centerTitle = centerTitle ?? (Platform.isIOS ? true : false);
 
   var sliverAppBar = SliverAppBar(
     pinned: pinned ?? false,

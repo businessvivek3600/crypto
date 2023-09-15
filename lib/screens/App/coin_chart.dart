@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:candlesticks/candlesticks.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:my_global_tools/screens/components/empty_list_widget.dart';
+import 'package:my_global_tools/constants/asset_constants.dart';
 import 'package:my_global_tools/utils/color.dart';
 import 'package:my_global_tools/utils/loader.dart';
+import 'package:my_global_tools/utils/picture_utils.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../functions/dio/exception/api_error_handler.dart';
 import '../../functions/functions.dart';
@@ -30,48 +32,278 @@ class CoinChartPage extends StatefulWidget {
   _CoinChartPageState createState() => _CoinChartPageState();
 }
 
-class _CoinChartPageState extends State<CoinChartPage> {
+class _CoinChartPageState extends State<CoinChartPage>
+    with SingleTickerProviderStateMixin {
+  late TabController tabController;
+
+  @override
+  void initState() {
+    dio = sl.get<DioClient>();
+    tabController = TabController(length: 2, vsync: this);
+    tabController.addListener(() {
+      if (tabController.index == 0) {
+        future(1000, () => SystemChrome.setPreferredOrientations([]));
+      } else {
+        SystemChrome.setPreferredOrientations(
+            [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+      }
+      setState(() {});
+    });
+    // getChartData();
+    // getCurrentPrice();
+    _tooltip = TooltipBehavior(enable: true);
+    _trackballBehavior = TrackballBehavior(
+        enable: true, activationMode: ActivationMode.singleTap);
+
+    SystemChrome.setPreferredOrientations([]);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget tradingViewWidget = TradingViewWidgetHtml(
+        cryptoName: widget.symbol!,
+        theme: getTheme.brightness == Brightness.light ? 'light' : 'dark');
+    return OrientationBuilder(builder: (context, orientation) {
+      if (orientation == Orientation.landscape && tabController.index == 0) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,
+            overlays: []);
+        return Scaffold(
+            drawer: const DashSettingPage(),
+            body: SafeArea(
+                maintainBottomViewPadding: true,
+                left: false,
+                right: false,
+                top: true,
+                bottom: false,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 40,
+                      child: Column(
+                        children: [
+                          height20(),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                    onTap: () {
+                                      tabController.animateTo(1);
+                                    },
+                                    child: assetImages(PNGAssets.history,
+                                        width: 30, height: 30)),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    GestureDetector(
+                                        child: assetImages(PNGAssets.buy,
+                                            width: 30, height: 30)),
+                                    height10(),
+                                    GestureDetector(
+                                        child: assetImages(PNGAssets.recieve,
+                                            width: 30, height: 30)),
+                                    height10(),
+                                    GestureDetector(
+                                        child: assetImages(PNGAssets.send,
+                                            width: 30, height: 30)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          height20(),
+                        ],
+                      ),
+                    ),
+                    Expanded(child: tradingViewWidget),
+                  ],
+                )));
+      }
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+      return Scaffold(
+        appBar: buildCustomAppBar(
+            title: titleLargeText('Graph View', context, color: Colors.white),
+            height: kToolbarHeight + 20,
+            actions: [
+              ToggleBrightnessButton(
+                onChange: (mode) {
+                  setState(() {});
+                },
+              ),
+              // PopupMenuButton(
+              //   surfaceTintColor: Colors.white,
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              //   shadowColor: getTheme.brightness == Brightness.light
+              //       ? Colors.grey
+              //       : null,
+              //   offset: const Offset(0, 30),
+              //   itemBuilder: (_) => intervals
+              //       .map((e) => PopupMenuItem(
+              //             textStyle: const TextStyle(
+              //                 color: Colors.black,
+              //                 textBaseline: TextBaseline.alphabetic),
+              //             value: e,
+              //             child: capText(e, context),
+              //           ))
+              //       .toList(),
+              //   onSelected: (value) {
+              //     setState(() {
+              //       interval = value.toString();
+              //     });
+              //     getChartData();
+              //   },
+              //   child: const Icon(Icons.more_vert),
+              // ),
+              // width10()
+            ],
+            bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(40),
+                child: TabBar(
+                    controller: tabController,
+                    physics: const BouncingScrollPhysics(),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white60,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicatorPadding: const EdgeInsets.all(0),
+                    // indicatorWeight: 0,
+                    indicatorColor: Colors.white,
+                    tabs: const [
+                      Tab(text: 'Chart'),
+                      Tab(text: 'Transactions')
+                    ]))),
+        body: TabBarView(
+          controller: tabController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            ListView(
+              children: [SizedBox(height: 300, child: tradingViewWidget)],
+            ),
+            const Column(
+              children: [],
+            ),
+          ],
+        ),
+        // body: buildSfChart(),
+        bottomNavigationBar:
+            tabController.index == 0 ? _buildBottomBar(context) : null,
+      );
+    });
+  }
+
+  ListView buildSfChart() {
+    return ListView(
+      children: [
+        Card(
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          shadowColor: getTheme.brightness == Brightness.light
+              ? Colors.grey.withOpacity(0.2)
+              : Colors.transparent,
+          elevation: 10,
+          margin: const EdgeInsets.all(0),
+          child: Container(
+              height: (getWidth > getHeight ? getHeight : getWidth) -
+                  kToolbarHeight -
+                  kBottomNavigationBarHeight,
+              padding: const EdgeInsets.only(right: 8.0),
+              child:
+                  loadingGraph ? loaderWidget(radius: 10) : buildSfChartData()),
+        ),
+
+        //     //
+        // Container(height: 300, child: buildCandleStickChart()),
+        //     // Spacer(),
+      ],
+    );
+    //
+  }
+
+  Padding _buildBottomBar(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(paddingDefault),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          //send button
+          SizedBox(
+            height: 45,
+            child: FloatingActionButton.extended(
+              backgroundColor: greenLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              onPressed: () {
+                //
+              },
+              label: bodyLargeText('Send', context, color: Colors.white),
+              icon: assetImages(PNGAssets.send, width: 20, height: 20),
+            ),
+          ),
+
+          //recive button
+          width10(),
+          SizedBox(
+            height: 45,
+            child: FloatingActionButton.extended(
+                backgroundColor: Colors.blueGrey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                onPressed: () {
+                  //
+                },
+                label: bodyLargeText('Recive', context, color: Colors.white),
+                icon: assetImages(PNGAssets.recieve, width: 20, height: 20)),
+          ),
+
+          //buy button
+          width10(),
+          SizedBox(
+            height: 45,
+            child: FloatingActionButton.extended(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              onPressed: () {
+                //
+              },
+              label: bodyLargeText('Buy', context, color: Colors.white),
+              icon: assetImages(PNGAssets.buy, width: 20, height: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   late DioClient dio;
   List<ChartData> data = [];
   List<Candle> candles = [];
   late TooltipBehavior _tooltip;
-  late bool _enableSolidCandle;
-  late bool _toggleVisibility;
   TrackballBehavior? _trackballBehavior;
   bool loadingGraph = false;
   bool loadingPrice = false;
   double price = 0;
   String interval = '1m';
   String? priceErr;
-  final intervals = [
-    '1m',
-    // '3m',
-    '5m',
-    // '15m',
-    '30m',
-    '1h',
-    // '2h',
-    // '4h',
-    // '6h',
-    // '8h',
-    '12h',
-    '1d',
-    // '3d',
-    '1w',
-    '1M',
-  ];
-  @override
-  void initState() {
-    dio = sl.get<DioClient>();
-    // getChartData();
-    // getCurrentPrice();
-    _tooltip = TooltipBehavior(enable: true);
-    _trackballBehavior = TrackballBehavior(
-        enable: true, activationMode: ActivationMode.singleTap);
-    _enableSolidCandle = true;
-    _toggleVisibility = true;
-    super.initState();
-  }
+  final intervals = ['1m', '5m', '30m', '1h', '12h', '1d', '1w', '1M'];
 
   Future<ApiResponse> hitApi(String url) async {
     try {
@@ -137,209 +369,6 @@ class _CoinChartPageState extends State<CoinChartPage> {
     setState(() {
       loadingPrice = false;
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // return TradingViewWidgetHtml(cryptoName: widget.symbol!);
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: buildCustomAppBar(
-            title: titleLargeText('Graph View', context, color: Colors.white),
-            height: kToolbarHeight + 40,
-            actions: [
-              ToggleBrightnessButton(
-                onChange: (mode) {
-                  setState(() {});
-                },
-              ),
-              PopupMenuButton(
-                surfaceTintColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                shadowColor: getTheme.brightness == Brightness.light
-                    ? Colors.grey
-                    : null,
-                offset: const Offset(0, 30),
-                itemBuilder: (_) => intervals
-                    .map((e) => PopupMenuItem(
-                          textStyle: const TextStyle(
-                              color: Colors.black,
-                              textBaseline: TextBaseline.alphabetic),
-                          value: e,
-                          child: capText(e, context),
-                        ))
-                    .toList(),
-                onSelected: (value) {
-                  setState(() {
-                    interval = value.toString();
-                  });
-                  getChartData();
-                },
-                child: const Icon(Icons.more_vert),
-              ),
-              width10()
-            ],
-            bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(40),
-                child: TabBar(
-                    physics: const BouncingScrollPhysics(),
-                    // indicator: BoxDecoration(
-                    //   borderRadius: BorderRadius.circular(10),
-                    //   color: getTheme.brightness == Brightness.light
-                    //       ? Colors.grey.withOpacity(0.8)
-                    //       : Colors.grey.withOpacity(0.8),
-                    // ),
-
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white60,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorPadding: const EdgeInsets.all(0),
-                    // indicatorWeight: 0,
-                    indicatorColor: Colors.white,
-                    tabs: const [
-                      Tab(
-                        text: 'Chart',
-                      ),
-                      Tab(
-                        text: 'Transactions',
-                      ),
-                    ]))),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            Column(
-              children: [
-                Expanded(
-                    flex: 2,
-                    child: TradingViewWidgetHtml(
-                      cryptoName: widget.symbol!,
-                      theme: getTheme.brightness == Brightness.light
-                          ? 'light'
-                          : 'dark',
-                    )),
-                const Spacer(flex: 1),
-              ],
-            ),
-            Column(
-              children: [
-                Expanded(
-                    flex: 3,
-                    child: TradingViewWidgetHtml(
-                      cryptoName: widget.symbol!,
-                      theme: getTheme.brightness == Brightness.light
-                          ? 'light'
-                          : 'dark',
-                    )),
-                const Spacer(flex: 1),
-              ],
-            ),
-          ],
-        ),
-        // body: ListView(
-        //   children: [
-        //     Card(
-        //       surfaceTintColor: Colors.transparent,
-        //       shape: RoundedRectangleBorder(
-        //         borderRadius: BorderRadius.circular(10),
-        //       ),
-        //       shadowColor: getTheme.brightness == Brightness.light
-        //           ? Colors.grey.withOpacity(0.2)
-        //           : Colors.transparent,
-        //       elevation: 10,
-        //       margin: const EdgeInsets.all(0),
-        //       child: Container(
-        //           height: (getWidth > getHeight ? getHeight : getWidth) -
-        //               kToolbarHeight -
-        //               kBottomNavigationBarHeight,
-        //           padding: const EdgeInsets.only(right: 8.0),
-        //           child: loadingGraph
-        //               ? loaderWidget(radius: 10)
-        //               : buildSfChartData()),
-        //     ),
-
-        //     //
-        //     // Container(height: 300, child: buildCandleStickChart()),
-        //     // Spacer(),
-        //   ],
-        // )
-        //
-
-        bottomNavigationBar: Padding(
-          padding: EdgeInsets.all(paddingDefault),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              //send button
-              SizedBox(
-                height: 45,
-                child: FloatingActionButton.extended(
-                  backgroundColor: greenLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  onPressed: () {
-                    //
-                  },
-                  label: bodyLargeText('Send', context, color: Colors.white),
-                  icon: Transform.rotate(
-                      angle: -pi / 4,
-                      child: const Icon(
-                        Icons.send_rounded,
-                        size: 20,
-                        color: Colors.white,
-                      )),
-                ),
-              ),
-
-              //recive button
-              width10(),
-              SizedBox(
-                height: 45,
-                child: FloatingActionButton.extended(
-                  backgroundColor: Colors.blueGrey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  onPressed: () {
-                    //
-                  },
-                  label: bodyLargeText('Recive', context, color: Colors.white),
-                  icon: const Icon(
-                    Icons.download_rounded,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-
-              //buy button
-              width10(),
-              SizedBox(
-                height: 45,
-                child: FloatingActionButton.extended(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  onPressed: () {
-                    //
-                  },
-                  label: bodyLargeText('Buy', context, color: Colors.white),
-                  icon: const Icon(
-                    Icons.currency_exchange,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget buildCandleStickChart() {
@@ -481,20 +510,6 @@ class _CoinChartPageState extends State<CoinChartPage> {
   }
 }
 
-ChartData chartData = ChartData(
-  open_time: 1650099200,
-  open: 100.0,
-  high: 105.0,
-  low: 95.0,
-  close: 102.0,
-  volume: 100000,
-  close_time: 1650099300,
-  quote_volume: 10000000,
-  count: 100,
-  taker_buy_volume: 50000,
-  taker_buy_quote_volume: 5000000,
-);
-
 List<ChartData> createSamples(int count) {
   List<ChartData> samples = [];
   for (int i = 0; i < count; i++) {
@@ -581,27 +596,24 @@ class CryptoNameDataSource {
     return '''
 <!-- TradingView Widget BEGIN -->
 <div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+  <div id="tradingview_a0483"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+  new TradingView.widget(
   {
   "autosize": true,
   "symbol": "$name",
-  "interval": "1",
-  "timezone": "Asia/Kathmandu",
+  "interval": "30",
+  "timezone": "Asia/Kolkata",
   "theme": "$theme",
-  "style": "30",
+  "style": "1",
   "locale": "in",
   "enable_publishing": false,
   "allow_symbol_change": true,
-  "withdateranges": true,
-  "hide_side_toolbar": false,
   "details": false,
-  "hotlist": false,
-  "calendar": false,
-  "show_popup_button": true,
-  "popup_width": "1000",
-  "popup_height": "650"
+  "container_id": "tradingview_a0483"
 }
+  );
   </script>
 </div>
 <!-- TradingView Widget END -->

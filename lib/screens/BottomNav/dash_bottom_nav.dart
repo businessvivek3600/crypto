@@ -1,7 +1,6 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:awesome_bottom_bar/widgets/inspired/inspired.dart';
 import 'package:flutter/material.dart';
-import 'package:my_global_tools/utils/color.dart';
 import '/providers/dashboard_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -15,19 +14,10 @@ class DashBottomNav extends StatefulWidget {
 class _DashBottomNavState extends State<DashBottomNav> {
   @override
   Widget build(BuildContext context) {
-    const List<TabItem> items = [
-      TabItem(
-        icon: Icons.wallet,
-        title: 'Wallet',
-      ),
-      TabItem(
-        icon: Icons.history,
-        title: 'Transactions',
-      ),
-      TabItem(
-        icon: Icons.swap_horiz_rounded,
-        title: 'Swap',
-      ),
+    List<TabItem> items = [
+      const TabItem(icon: Icons.wallet, title: 'Wallet'),
+      const TabItem(icon: Icons.history, title: 'Transactions'),
+      const TabItem(icon: Icons.swap_horiz_rounded, title: 'Swap'),
       // TabItem(
       //   icon: Icons.chat,
       //   title: 'Chats',
@@ -42,7 +32,7 @@ class _DashBottomNavState extends State<DashBottomNav> {
         return BottomBarInspiredInside(
           items: items,
           backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Color.fromARGB(255, 5, 35, 41)
+              ? const Color.fromARGB(255, 5, 35, 41)
               : Theme.of(context).colorScheme.background,
           color: Colors.grey,
           colorSelected: Colors.white,

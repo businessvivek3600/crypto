@@ -91,6 +91,7 @@ class _WebViewExampleState extends State<WebViewExample> {
         DeviceOrientation.landscapeRight,
       ]);
     }
+
     initController();
   }
 

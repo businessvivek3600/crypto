@@ -5,6 +5,11 @@ class PNGNetwork {
 
 class PNGAssets {
   static const String appLogo = 'appLogo.png';
+  static const String send = 'send.png';
+  static const String recieve = 'download.png';
+  static const String buy = 'buy-button.png';
+  static const String history = 'history.png';
+  static const String swap = 'swap.png';
 }
 
 class SNGAssets {
