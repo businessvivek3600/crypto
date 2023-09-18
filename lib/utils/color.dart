@@ -14,6 +14,7 @@ const Color lightText = Colors.black; // Text color
 const Color darkPrimary = Color.fromARGB(255, 2, 189, 189); // Primary color
 const Color darkAccent = Color.fromARGB(125, 2, 254, 254); // Accent color
 const Color darkBackground = Color(0xFF121212); // Background color
+Color darkBlueGrey = Colors.blueGrey.darken(60); // Background color
 const Color darkText = Colors.white; // Text color¯
 
 // Other Colors

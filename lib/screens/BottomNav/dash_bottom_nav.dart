@@ -1,6 +1,8 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:awesome_bottom_bar/widgets/inspired/inspired.dart';
 import 'package:flutter/material.dart';
+import '../../utils/color.dart';
+import '../../utils/sized_utils.dart';
 import '/providers/dashboard_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -31,9 +33,12 @@ class _DashBottomNavState extends State<DashBottomNav> {
       builder: (context, provider, child) {
         return BottomBarInspiredInside(
           items: items,
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color.fromARGB(255, 5, 35, 41)
-              : Theme.of(context).colorScheme.background,
+          // backgroundColor: Theme.of(context).brightness == Brightness.dark
+          //     ? const Color.fromARGB(255, 5, 35, 41)
+          //     : Theme.of(context).colorScheme.background,
+          backgroundColor: (getTheme.brightness == Brightness.light
+              ? Colors.white
+              : darkBlueGrey),
           color: Colors.grey,
           colorSelected: Colors.white,
           indexSelected: provider.bottomIndex,

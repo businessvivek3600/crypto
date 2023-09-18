@@ -540,10 +540,6 @@ class _HomePageState extends State<HomePage> {
       isSliver: true,
       title: Row(
         children: [
-          CircleAvatar(
-              child: RandomAvatar(DateTime.now().toIso8601String(),
-                  height: 25, width: 25)),
-          width10(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,13 +549,6 @@ class _HomePageState extends State<HomePage> {
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                // Row(
-                //   children: [
-                //     const Icon(Icons.location_on_outlined,
-                //         color: Colors.greenAccent, size: 15),
-                //     // capText('Mohali,Punjab', context),
-                //   ],
-                // ),
               ],
             ),
           ),
@@ -594,49 +583,8 @@ class _HomePageState extends State<HomePage> {
       actions: [
         const ToggleBrightnessButton(),
         IconButton(
-            onPressed: () async {
-              bool? logout = await CustomBottomSheet.show<bool>(
-                context: context,
-                // backgroundColor: Colors.transparent,
-                showCloseIcon: false,
-                curve: Curves.bounceIn,
-                builder: (context) => Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    titleLargeText('Do you really want to logout?', context),
-                    const Divider(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton(
-                            style: buttonStyle(bgColor: Colors.transparent),
-                            onPressed: () => Navigator.pop(context, false),
-                            child: bodyMedText('Cancel', context,
-                                color: Colors.red),
-                          ),
-                        ),
-                        width10(),
-                        Expanded(
-                          child: FilledButton(
-                            // style:
-                            //     buttonStyle(bgColor: Colors.green),
-                            onPressed: () => Navigator.pop(context, true),
-                            child: bodyMedText('Confirm', context,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-              logD('will pop scope $logout');
-              if (logout != null && logout) {
-                // final StreamAuth info = StreamAuthScope.of(context);
-                StreamAuthScope.of(context).signOut(onBoarding: true);
-              }
-            },
-            icon: const Icon(Icons.logout))
+            onPressed: () => context.pushNamed(RouteName.dashSetting),
+            icon: const Icon(Icons.settings)),
       ],
     );
   }

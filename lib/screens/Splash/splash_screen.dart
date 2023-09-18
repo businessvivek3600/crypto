@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '/utils/color.dart';
 import '../../services/auth_service.dart';
 import '../Onboardings/on_boarding_page.dart';
 import '/route_management/route_path.dart';
@@ -82,7 +83,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
+      body: Container(
+        decoration: BoxDecoration(gradient: buildAppbarGradient()),
         width: double.maxFinite,
         child: Transform.translate(
           offset: Offset(0, _splashOffsetAnimation.value),

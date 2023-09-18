@@ -51,7 +51,7 @@ class _SlotBookingPageState extends State<SlotBookingPage> {
     return Scaffold(
       appBar: CalendarAppBar(
         accent: getTheme.colorScheme.primary,
-        backButton: true,
+        backButton: false,
         fullCalendar: false,
         selectedDate: DateTime.now(),
         onDateChanged: (value) {

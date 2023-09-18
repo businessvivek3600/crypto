@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_global_tools/utils/color.dart';
 import '/utils/default_logger.dart';
 import '/utils/sized_utils.dart';
 
@@ -29,9 +30,10 @@ class CustomBottomSheet extends StatefulWidget {
       this.backgroundColor,
       this.dismissible = true,
       required this.child,
-      this.padding =
-          const EdgeInsetsDirectional.only(start: 20, bottom: 20, end: 20, top: 30),
-      this.margin = const EdgeInsetsDirectional.only(start: 20, bottom: 60, end: 20),
+      this.padding = const EdgeInsetsDirectional.only(
+          start: 20, bottom: 20, end: 20, top: 30),
+      this.margin =
+          const EdgeInsetsDirectional.only(start: 20, bottom: 60, end: 20),
       this.curve = Curves.easeIn,
       required this.onDismiss,
       this.transitionType = TransitionType.bottom,
@@ -116,9 +118,14 @@ class _CustomBottomSheetState extends State<CustomBottomSheet>
                   height: widget.height,
                   width: widget.width ?? MediaQuery.of(context).size.width,
                   decoration: BoxDecoration(
-                      color:
-                          widget.backgroundColor ?? Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(20)),
+                    // color:
+                    //     widget.backgroundColor ?? Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    color: widget.backgroundColor ??
+                        (getTheme.brightness == Brightness.light
+                            ? Colors.white
+                            : darkBlueGrey),
+                  ),
                   child: widget.child,
                 ),
                 if (widget.showCloseIcon)

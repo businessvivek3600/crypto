@@ -1,189 +1,12 @@
-/*import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
-import '/functions/repositories/auth_repo.dart';
-import '/repo_injection.dart';
-import '/route_management/route_path.dart';
-import '/screens/LandingPage.dart';
-import '/utils/default_logger.dart';
-import '/utils/my_dialogs.dart';
-import '/widgets/app_web_view_page.dart';
-
-import '../models/user/user_data_model.dart';
-import '../providers/auth_provider.dart';
-import '../screens/splash_screen.dart';
-import '../widgets/page_not_found.dart';
-import 'route_animation.dart';
-import 'route_name.dart';
-
-class MyRouter {
-  static const String tag = 'MyRouter';
-
-  final GoRouter goRouter;
-
-  MyRouter(String? initialRoute) : goRouter = router(initialRoute);
-
-  static GoRouter router(String? initialRoute) => GoRouter(
-        navigatorKey: Get.key,
-        initialLocation: RoutePath.splash,
-        refreshListenable: sl.get<AuthProvider>(),
-        debugLogDiagnostics: true,
-        routes: <GoRoute>[
-          //todo: add your router here
-          GoRoute(
-              name: RouteName.splash,
-              path: RoutePath.splash,
-              builder: (BuildContext context, GoRouterState state) =>
-                  const SplashScreen()),
-
-          GoRoute(
-              name: RouteName.home,
-              path: RoutePath.home,
-              builder: (BuildContext context, GoRouterState state) =>
-                  const Home(),
-              routes: [
-                GoRoute(
-                    name: RouteName.explore,
-                    path: RoutePath.explore,
-                    pageBuilder: (BuildContext context, GoRouterState state) {
-                      return animatedRoute(
-                          state,
-                          WebViewExample(
-                            url: state.queryParameters['url'],
-                          ));
-                    }),
-              ]),
-          GoRoute(
-            name: RouteName.notFoundScreen,
-            path: RoutePath.notFoundScreen,
-            builder: (BuildContext context, GoRouterState state) =>
-                NotFoundScreen(uri: state.location, state: state),
-          ),
-
-          */ /*
-        GoRoute(
-            name: RouteName.onBoarding,
-            path: RoutePath.onBoarding,
-            builder: (BuildContext context, GoRouterState state) =>
-                const OnBoardingScreen()),
-        GoRoute(
-            name: RouteName.mlmDash,
-            path: RoutePath.mlmDash,
-            pageBuilder: (BuildContext context, GoRouterState state) {
-              return animatedRoute(state, const MLMDashboardPage());
-            }),
-        GoRoute(
-            name: RouteName.ecomDash,
-            path: RoutePath.ecomDash,
-            pageBuilder: (BuildContext context, GoRouterState state) {
-              return animatedRoute(state, const EcommerceDashboardPage());
-            },
-            routes: [
-              GoRoute(
-                  name: RouteName.ecomCategoryPage,
-                  path: RoutePath.ecomCategoryPage,
-                  pageBuilder: (BuildContext context, GoRouterState state) {
-                    return animatedRoute(
-                        state,
-                        EcomCategoryPage(
-                          index:
-                              int.parse(state.queryParameters['index'] ?? '0'),
-                        ));
-                  }),
-            ]),
-        GoRoute(
-            name: RouteName.login,
-            path: RoutePath.login,
-            builder: (BuildContext context, GoRouterState state) =>
-                const LoginScreen()),*/ /*
-
-          ///MLM
-          */ /* GoRoute(
-            name: RouteName.mLMTransactionPage,
-            path: RoutePath.mLMTransactionPage,
-            pageBuilder: (BuildContext context, GoRouterState state) {
-              return animatedRoute(state, const MLMTransactionPage());
-            }),*/ /*
-
-          ///Ecommerce
-        ],
-        errorPageBuilder: (context, state) => MaterialPage(
-            child: NotFoundScreen(state: state, uri: state.location)),
-        redirect: guard,
-      );
-
-  static Future<String?> guard(
-      BuildContext context, GoRouterState state) async {
-    String path = state.matchedLocation;
-    infoLog('The path is--> ${state.location}');
-
-    var authRepo = sl.get<AuthRepo>();
-    await authRepo.saveUser(UserData(status: '2'));
-    UserData? user = await authRepo.getUser();
-
-    final bool loggedIn = user != null;
-    final bool loggingIn = path == RoutePath.login;
-    final bool onBoarding = path == RoutePath.onBoarding;
-    infoLog(
-        '** routing $path loggedIn $loggedIn   loggingIn $loggingIn **', tag);
-    if (!loggedIn && onBoarding) {
-      return RoutePath.onBoarding;
-    } else if (!loggedIn && loggingIn) {
-      return RoutePath.login;
-    } else if (!loggedIn && path == RoutePath.splash) {
-      return RoutePath.splash;
-    } else if (!loggedIn) {
-      return RoutePath.login;
-    }
-
-    ///user is guest or real
-    bool isGuest = true;
-    isGuest = user.status == '2';
-    infoLog(
-        'my router user is logged in $loggedIn, guest $isGuest, status is ${user.status} and path is $path',
-        tag);
-
-    ///if user is logged in
-    // if user is guest
-    if (loggedIn && isGuest) {
-      if (path == RoutePath.onBoarding) {
-        return RoutePath.ecomDash;
-      }
-    } else if (loggedIn && !isGuest) {
-      // MyDialogs.showQuickLoadingDialog(Get.context!);
-      // await Future.delayed(const Duration(seconds: 5));
-      // Navigator.pop(Get.context!);
-      infoLog('The path is ${state.location}');
-      // if (path == RoutePath.onBoarding) {
-      //   return RoutePath.home;
-      // }
-      // else
-        if (path.startsWith(RoutePath.home)) {
-        infoLog('user is logged in and trying to route in home', tag);
-        // await Future.delayed(const Duration(seconds: 5));
-        return state.location;
-      }
-    }
-    return null;
-  }
-}
-
-Copyright 2013 The Flutter Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.*/
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '/screens/BottomNav/dash_setting_page.dart';
 import '../screens/App/coin_chart.dart';
 import '../screens/App/transaction_details.dart';
 import '../screens/chat/ChatPageExample.dart';
-import '/models/recent_users.dart';
-import '/models/wallet_model.dart';
 import '/screens/App/coint_transfer/send_coin.dart';
 import '/screens/mnemonics/import_wallet.dart';
 import '../screens/App/Booking/slot_booking.dart';
@@ -198,7 +21,6 @@ import '../screens/App/Category/categoryDetailsPage.dart';
 import '/screens/User_Preferences/about_page.dart';
 import '/screens/User_Preferences/contact_page.dart';
 import '/screens/Settings/app_setting_page.dart';
-import '/screens/Splash/splash_screen2.dart';
 import '/screens/auth/email_registaration_page.dart';
 import '../screens/Addresses/AddressMainPage.dart';
 import '../screens/Addresses/add_new_address.dart';
@@ -366,6 +188,8 @@ class MyRouter {
                 ]),
             _newRoute2(RouteName.about,
                 (GoRouterState state) => const AboutPage(), null),
+            _newRoute2(RouteName.dashSetting,
+                (GoRouterState state) => const DashSettingPage(), null),
           ]),
 
       ///authentication

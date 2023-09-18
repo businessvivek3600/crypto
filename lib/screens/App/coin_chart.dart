@@ -342,6 +342,7 @@ class _CoinChartPageState extends State<CoinChartPage>
           .where((item) =>
               (jsonDecode(item['data']))['symbol'] == symbol.toUpperCase())
           .toList());
+
   void _sendCoin() {
     infoLog('wallet ${wallet?.toJson()}');
 

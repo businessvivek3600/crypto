@@ -33,6 +33,7 @@ class RouteName {
   static const String explore = 'explore';
 
   ///main setting
+  static const String dashSetting = 'dashSetting';
   static const String notificationPage = 'notificationPage';
   static const String addressMainPage = 'addressMainPage';
   static const String addNewAddress = 'addNewAddress';

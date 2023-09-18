@@ -1,11 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:elegant_notification/resources/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_global_tools/utils/color.dart';
+import '/screens/components/appbar.dart';
+import '/utils/global_ui_widgets.dart';
 import '/constants/app_const.dart';
 import '/functions/functions.dart';
 import '/route_management/route_name.dart';
-import '/utils/picture_utils.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
@@ -39,33 +42,9 @@ class _DashSettingPageState extends State<DashSettingPage> {
                 return Scaffold(
                   appBar: buildAppBar(context),
                   body: ListView(
-                    padding: EdgeInsets.symmetric(horizontal: paddingDefault),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: paddingDefault * 2),
                     children: [
-                      buildUserCard(context),
-                      height10(spaceDefault),
-                      buildCategoryCard(context, 'Personal Information', [
-                        buildSettingTile(context, Icons.person, 'My Profile',
-                            onTap: () => context.pushNamed(RouteName.profile,
-                                    queryParameters: {
-                                      'anim': RouteTransition.fromBottom.name
-                                    })),
-                        buildSettingTile(
-                            context, Icons.location_city, 'Address',
-                            onTap: () => context.pushNamed(
-                                    RouteName.addressMainPage,
-                                    queryParameters: {
-                                      'anim': RouteTransition.fromBottom.name,
-                                      'title': null,
-                                      'selectionMode': '0',
-                                    })),
-                        buildSettingTile(
-                            context, Icons.credit_card, 'Payment Methods',
-                            onTap: () => context.pushNamed(
-                                    RouteName.paymentMethodsPage,
-                                    queryParameters: {
-                                      'anim': RouteTransition.fromBottom.name
-                                    })),
-                      ]),
                       height10(spaceDefault),
                       buildCategoryCard(context, 'Preferences', [
                         buildSettingTile(
@@ -103,7 +82,6 @@ class _DashSettingPageState extends State<DashSettingPage> {
                             leadingColor: Colors.red, onTap: () async {
                           bool? logout = await CustomBottomSheet.show<bool>(
                             context: context,
-                            // backgroundColor: Colors.transparent,
                             showCloseIcon: false,
                             curve: Curves.bounceIn,
                             builder: (context) => Column(
@@ -142,7 +120,6 @@ class _DashSettingPageState extends State<DashSettingPage> {
                           );
                           logD('will pop scope $logout');
                           if (logout != null && logout) {
-                            // final StreamAuth info = StreamAuthScope.of(context);
                             StreamAuthScope.of(context)
                                 .signOut(onBoarding: true);
                           }
@@ -198,27 +175,44 @@ class _DashSettingPageState extends State<DashSettingPage> {
     );
   }
 
-  ListTile buildSettingTile(
-      BuildContext context, IconData leading, String title,
+  Widget buildSettingTile(BuildContext context, IconData leading, String title,
       {IconData trailing = Icons.arrow_forward_ios_rounded,
       Color? leadingColor,
       required VoidCallback onTap}) {
-    return ListTile(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      splashColor: Theme.of(context).colorScheme.onSecondary,
-      onTap: onTap,
-      leading: Icon(leading,
-          color: leadingColor ??
-              Theme.of(context).colorScheme.primary.withOpacity(0.8)),
-      title: bodyMedText(title, context),
-      trailing: Icon(trailing, size: 15),
+    return Padding(
+      padding: EdgeInsets.only(bottom: paddingDefault),
+      child: Material(
+        elevation: 2,
+        // surfaceTintColor: Colors.transparent,
+        // color: Colors.red,
+        shadowColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: ListTile(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
+          // splashColor: Theme.of(context).colorScheme.onSecondary,
+          // tileColor: Colors.white,
+
+          contentPadding: EdgeInsets.symmetric(horizontal: paddingDefault),
+          onTap: onTap,
+          leading: Icon(leading,
+              color: leadingColor ??
+                  Theme.of(context).colorScheme.primary.withOpacity(0.8)),
+          title: bodyMedText(title, context),
+          trailing: Icon(trailing, size: 15),
+        ),
+      ),
     );
   }
 
   Card buildCategoryCard(
       BuildContext context, String name, List<Widget> tiles) {
-    return Card(
-      elevation: 0.5,
+    return globalCard(
+      elevation: 0,
+      color: Colors.transparent,
+      shadowColor: Colors.transparent,
+      surfaceColor: Colors.transparent,
       child: Container(
         // padding: EdgeInsets.all(paddingDefault),
         decoration: const BoxDecoration(),
@@ -226,16 +220,17 @@ class _DashSettingPageState extends State<DashSettingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.all(paddingDefault * 2),
-              child: bodyLargeText(name, context),
+              padding: EdgeInsets.all(0),
+              child: bodyLargeText(name, context, color: Colors.grey),
             ),
-            const Divider(height: 0),
+            height10(),
+            // const Divider(height: 0, color: Colors.grey),
             ...tiles.map((tile) {
               int index = tiles.indexOf(tile);
               return Column(
                 children: [
                   tile,
-                  if (index < tiles.length - 1) const MySeparator(),
+                  // if (index < tiles.length - 1) const MySeparator(),
                 ],
               );
             }).toList(),
@@ -245,88 +240,9 @@ class _DashSettingPageState extends State<DashSettingPage> {
     );
   }
 
-  Card buildUserCard(BuildContext context) {
-    return Card(
-      elevation: 0.5,
-
-      // color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-      child: Container(
-        padding: EdgeInsets.all(paddingDefault),
-        decoration: const BoxDecoration(),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: getWidth * 0.08,
-              backgroundImage: const NetworkImage(
-                  'https://www.kindpng.com/picc/m/78-786207_user-avatar-png-user-avatar-icon-png-transparent.png'),
-            ),
-            width10(),
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                bodyLargeText('Chandan Kumar Singh', context),
-                bodyMedText('+91 9135324545', context),
-              ],
-            )),
-            width10(),
-            GestureDetector(
-              onTap: () async {
-                infoLog('data');
-                await showDialog<void>(
-                  context: context,
-                  // barrierColor: Colors.transparent,
-                  barrierDismissible: true,
-                  builder: (BuildContext dialogContext) {
-                    return Center(
-                      child: GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Card(
-                          child: Container(
-                            height: getWidth * 0.9,
-                            width: getWidth * 0.8,
-                            padding: EdgeInsets.all(paddingDefault * 2),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: buildCachedNetworkImage(
-                                      'https://i.pinimg.com/1200x/5e/da/c1/5edac14e5942bc0cadc41774b53dd36b.jpg',
-                                      fit: BoxFit.contain,
-                                      borderRadius: 10),
-                                ),
-                                height10(),
-                                bodyMedText('Tap to close', context)
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: SizedBox(
-                  height: getWidth * 0.2,
-                  width: getWidth * 0.2,
-                  child: buildCachedNetworkImage(
-                      'https://i.pinimg.com/1200x/5e/da/c1/5edac14e5942bc0cadc41774b53dd36b.jpg',
-                      fit: BoxFit.cover),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  AppBar buildAppBar(BuildContext context) {
-    return AppBar(
-      title: titleLargeText('Settings', context),
+  PreferredSize buildAppBar(BuildContext context) {
+    return buildCustomAppBar(
+      title: titleLargeText('Settings', context, color: Colors.white),
       actions: [
         IconButton(
             onPressed: () => context.pushNamed(RouteName.notificationPage,

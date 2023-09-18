@@ -1,5 +1,5 @@
 class AppConst {
-  static const String appName = 'New Crypto';
+  static const String appName = 'ZeLocker';
   static const String appPlayStoreId = 'com.touch.crypto';
   static const String appAppleStoreId = '6449289696';
 

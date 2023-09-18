@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_global_tools/screens/components/appbar.dart';
 import '../../route_management/route_animation.dart';
 import '../../route_management/route_name.dart';
 import '../../utils/text.dart';
@@ -24,8 +25,9 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
     return Consumer<SettingProvider>(
       builder: (context, provider, child) {
         return Scaffold(
-          appBar: AppBar(
-            title: Text(getLang.settings),
+          appBar: buildCustomAppBar(
+            title:
+                titleLargeText(getLang.settings, context, color: Colors.white),
           ),
           body: ListView(
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 10),
@@ -48,18 +50,24 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 trailing: const Icon(Icons.volume_up),
               ),
               height5(),
-              ListTile(
+              SwitchListTile.adaptive(
                 // tileColor: Colors.grey[100],
+
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 contentPadding:
                     const EdgeInsetsDirectional.symmetric(horizontal: 16),
                 title: Text(getLang.darkMode),
-                trailing: GestureDetector(
-                    onTap: () => provider.setThemeMode(context),
-                    child: Icon(provider.themeMode == ThemeMode.dark
-                        ? Icons.light_mode
-                        : Icons.dark_mode)),
+                value: provider.themeMode == ThemeMode.dark,
+                // isdense: true,
+                // trailing: GestureDetector(
+                //     onTap: () => provider.setThemeMode(context),
+                //     child: Icon(provider.themeMode == ThemeMode.dark
+                //         ? Icons.light_mode
+                //         : Icons.dark_mode)),
+                onChanged: (bool value) {
+                  provider.setThemeMode(context);
+                },
               ),
               height5(),
               ListTile(

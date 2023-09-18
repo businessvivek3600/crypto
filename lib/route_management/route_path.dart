@@ -36,6 +36,7 @@ class RoutePath {
   static const String about = RouteName.about;
 
   //main setting
+  static const String dashSetting = RouteName.dashSetting;
   static const String notificationPage = RouteName.notificationPage;
   static const String addressMainPage = RouteName.addressMainPage;
   static const String addNewAddress = RouteName.addNewAddress;

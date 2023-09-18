@@ -2,13 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import '/functions/functions.dart';
 import '/models/coin_model.dart';
-import '/models/user/user_data_model.dart';
 import '/utils/my_toasts.dart';
 
 import '../constants/api_const.dart';
 import '../functions/repositories/dash_repo.dart';
 import '../models/recent_users.dart';
-import '../models/wallet_model.dart';
 import '../utils/api_handler_utils.dart';
 import '../utils/default_logger.dart';
 import '../widgets/MultiStageButton.dart';

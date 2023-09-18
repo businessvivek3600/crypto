@@ -12,8 +12,8 @@
   "extraTile1": "Extra Tile 1",
   "extraTile2": "Extra Tile 2",
 
-  "settings": "Settings",
-  "notification": "Settings",
+  "settings": "App Settings",
+  "notification": "Notification Settings",
   "sound": "Sound",
   "darkMode": "Dark Mode",
   "language": "Language",

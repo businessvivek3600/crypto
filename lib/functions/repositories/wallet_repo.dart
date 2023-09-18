@@ -1,10 +1,5 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import '/utils/default_logger.dart';
 import '/constants/api_const.dart';
-import '/constants/sp_constants.dart';
-import '/models/user/user_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/base/api_response.dart';
 import '../dio/dio_client.dart';
