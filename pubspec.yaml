@@ -91,6 +91,7 @@ dependencies:
   syncfusion_flutter_charts: ^22.2.12
   candlesticks: ^2.1.0
   web_socket_channel: ^2.4.0
+  side_sheet: ^1.0.4
 
 
   #notifications

@@ -306,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                                               element.tokenName ==
                                               coin.parentWallet);
                                       context.pop();
-                                      context.goNamed(RouteName.sendCoin,
+                                      context.pushNamed(RouteName.sendCoin,
                                           extra: {
                                             "wallet": wallet.toJson(),
                                             "coin": coin.toJson()

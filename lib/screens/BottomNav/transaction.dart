@@ -1,22 +1,20 @@
 // create a statefull widget to display the transactions from the database
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_global_tools/functions/functions.dart';
-import 'package:my_global_tools/screens/components/empty_list_widget.dart';
-import 'package:my_global_tools/utils/date_utils.dart';
-import 'package:my_global_tools/utils/default_logger.dart';
+import '../../utils/default_logger.dart';
+import '/functions/functions.dart';
+import '/screens/components/empty_list_widget.dart';
+import '/utils/date_utils.dart';
 import '../../route_management/route_name.dart';
 import '../../functions/sqlDatabase.dart';
 import '../components/appbar.dart';
 import '/screens/BottomNav/dash_setting_page.dart';
 import '/utils/sized_utils.dart';
 import '/utils/text.dart';
-import 'dash_home_page.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -35,25 +33,27 @@ class _TransactionsPageState extends State<TransactionsPage> {
         title: titleLargeText('Transactions', context, color: Colors.white),
         actions: const [ToggleBrightnessButton()],
       ),
-      body: const _TransactionBody(),
+      body: const TransactionList(trasnsactionList: null),
     );
   }
 }
 
-class _TransactionBody extends StatefulWidget {
-  const _TransactionBody();
+class TransactionList extends StatefulWidget {
+  const TransactionList({this.trasnsactionList});
+  final Future<List<Map<String, dynamic>>>? trasnsactionList;
 
   @override
-  State<_TransactionBody> createState() => _TransactionBodyState();
+  State<TransactionList> createState() => _TransactionListState();
 }
 
-class _TransactionBodyState extends State<_TransactionBody> {
+class _TransactionListState extends State<TransactionList> {
   late Future<List<Map<String, dynamic>>> _transactions;
 
   @override
   void initState() {
     super.initState();
-    _transactions = SqlDb().getAll(oredrBy: 'created_at DESC');
+    _transactions =
+        widget.trasnsactionList ?? SqlDb().getAll(oredrBy: 'created_at DESC');
   }
 
   @override
@@ -61,7 +61,7 @@ class _TransactionBodyState extends State<_TransactionBody> {
     return FutureBuilder<List<Map<String, dynamic>>>(
         future: _transactions,
         builder: (context, snapshot) {
-          // infoLog('$snapshot ${snapshot.connectionState}');
+          infoLog('$snapshot ${snapshot.connectionState}');
           if (snapshot.hasData) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -84,7 +84,7 @@ class _TransactionBodyState extends State<_TransactionBody> {
   }
 
   @override
-  void didUpdateWidget(covariant _TransactionBody oldWidget) {
+  void didUpdateWidget(covariant TransactionList oldWidget) {
     super.didUpdateWidget(oldWidget);
   }
 

@@ -201,7 +201,7 @@ class WalletProvider extends ChangeNotifier {
   }
 
   ButtonLoadingState loadingWallets = ButtonLoadingState.idle;
-  List<Coin> wallets = [];
+  List<Coin> coins = [];
   List<RecentUsers> recentUsers = [];
   Future<void> selectCoin(BuildContext context,
       {bool loading = true, bool token = true}) async {
@@ -217,13 +217,13 @@ class WalletProvider extends ChangeNotifier {
       if (status) {
         try {
           if (data!['wallets'] != null) {
-            wallets.clear();
+            coins.clear();
             for (var e in data['wallets']) {
               if (!token) {
                 if (e['parentWallet'] != e['contractAddress']) continue;
-                wallets.add(Coin.fromJson(e));
+                coins.add(Coin.fromJson(e));
               } else {
-                wallets.add(Coin.fromJson(e));
+                coins.add(Coin.fromJson(e));
               }
             }
           }

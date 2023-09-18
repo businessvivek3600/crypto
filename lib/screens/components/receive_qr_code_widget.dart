@@ -20,8 +20,14 @@ class ReceiveQrCodeWidget extends StatelessWidget {
   ReceiveQrCodeWidget({
     super.key,
     required this.walletModel,
-  });
+    this.embeded = false,
+    this.size,
+  }) {
+    size ??= const Size(250, 200);
+  }
   final Wallet walletModel;
+  final bool embeded;
+  Size? size;
   final GlobalKey _qrKey = GlobalKey();
 
   @override
@@ -32,25 +38,26 @@ class ReceiveQrCodeWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsetsDirectional.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: getTheme.textTheme.displayLarge?.color),
-                height: 5,
-                width: 30,
-              ),
-            ],
-          ),
+          if (!embeded)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  margin: const EdgeInsetsDirectional.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: getTheme.textTheme.displayLarge?.color),
+                  height: 5,
+                  width: 30,
+                ),
+              ],
+            ),
           const Spacer(),
           RepaintBoundary(
             key: _qrKey,
             child: Container(
               padding: EdgeInsets.all(paddingDefault),
-              width: 250,
+              width: size?.width,
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(20)),
               child: Column(
@@ -77,7 +84,7 @@ class ReceiveQrCodeWidget extends StatelessWidget {
                       image: const AssetImage(
                           'assets/images/${PNGAssets.appLogo}'),
                       typeNumber: 3,
-                      size: 200,
+                      size: size != null ? size!.width * 4 / 5 : 100,
                       data: walletModel.walletAddress ?? '',
                       errorCorrectLevel: QrErrorCorrectLevel.M,
                       elementColor: Colors.black,

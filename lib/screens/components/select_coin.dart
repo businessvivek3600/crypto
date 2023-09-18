@@ -103,19 +103,19 @@ class _SelectCoinWidgetState extends State<SelectCoinWidget> {
     List<Coin> coins = [];
     List<Wallet> userWallets = sl.get<AuthProvider>().user.wallet ?? [];
     if (widget.token) {
-      for (var element in provider.wallets) {
+      for (var element in provider.coins) {
         if (userWallets
             .any((wallet) => wallet.tokenName == element.parentWallet)) {
           coins.add(element);
         }
       }
     } else {
-      coins = provider.wallets;
+      coins = provider.coins;
     }
     return Container(
       child: (provider.loadingWallets == ButtonLoadingState.loading) ||
               (provider.loadingWallets == ButtonLoadingState.idle &&
-                  provider.wallets.isNotEmpty)
+                  provider.coins.isNotEmpty)
           ? ListView.builder(
               controller: scrollController,
               itemBuilder: (context, i) {

@@ -1,18 +1,29 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:candlesticks/candlesticks.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:my_global_tools/constants/asset_constants.dart';
-import 'package:my_global_tools/utils/color.dart';
-import 'package:my_global_tools/utils/loader.dart';
-import 'package:my_global_tools/utils/picture_utils.dart';
+import '../../functions/sqlDatabase.dart';
+import '../BottomNav/transaction.dart';
+import '../components/receive_qr_code_widget.dart';
+import '/constants/asset_constants.dart';
+import '/utils/color.dart';
+import '/utils/loader.dart';
+import '/utils/picture_utils.dart';
+import 'package:side_sheet/side_sheet.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../functions/dio/exception/api_error_handler.dart';
 import '../../functions/functions.dart';
 import '../../models/base/api_response.dart';
+import '../../models/coin_model.dart';
+import '../../models/user/user_data_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../route_management/route_name.dart';
 import '../components/appbar.dart';
 import '/functions/dio/dio_client.dart';
 import '/screens/BottomNav/dash_setting_page.dart';
@@ -35,6 +46,9 @@ class CoinChartPage extends StatefulWidget {
 class _CoinChartPageState extends State<CoinChartPage>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
+  late String symbol;
+  Coin? coin;
+  Wallet? wallet;
 
   @override
   void initState() {
@@ -44,11 +58,29 @@ class _CoinChartPageState extends State<CoinChartPage>
       if (tabController.index == 0) {
         future(1000, () => SystemChrome.setPreferredOrientations([]));
       } else {
-        SystemChrome.setPreferredOrientations(
-            [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+        // SystemChrome.setPreferredOrientations(
+        // [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
       }
       setState(() {});
     });
+    symbol = widget.symbol!.toLowerCase().split('usdt').first;
+    try {
+      coin = sl
+          .get<DashboardProvider>()
+          .coinModel!
+          .coins!
+          .firstWhere((element) => element.symbol!.toLowerCase() == symbol);
+      if (coin != null) {
+        wallet = sl
+            .get<AuthProvider>()
+            .user
+            .wallet!
+            .firstWhere((element) => element.tokenName == coin!.parentWallet);
+      }
+    } catch (e) {
+      errorLog(e.toString(), 'coin chart page');
+    }
+
     // getChartData();
     // getCurrentPrice();
     _tooltip = TooltipBehavior(enable: true);
@@ -79,7 +111,6 @@ class _CoinChartPageState extends State<CoinChartPage>
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,
             overlays: []);
         return Scaffold(
-            drawer: const DashSettingPage(),
             body: SafeArea(
                 maintainBottomViewPadding: true,
                 left: false,
@@ -99,7 +130,41 @@ class _CoinChartPageState extends State<CoinChartPage>
                               children: [
                                 GestureDetector(
                                     onTap: () {
-                                      tabController.animateTo(1);
+                                      // tabController.animateTo(1);
+
+                                      SideSheet.right(
+                                          width: 350,
+                                          sheetColor: Colors.transparent,
+                                          body: _LandscapeSheetWidget(
+                                              widget: widget,
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: titleLargeText(
+                                                          'Transactions',
+                                                          context,
+                                                        ),
+                                                      ),
+                                                      width10(),
+                                                      GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: const Icon(
+                                                              Icons.clear)),
+                                                    ],
+                                                  ),
+                                                  height10(),
+                                                  Expanded(
+                                                      child: TransactionList(
+                                                          trasnsactionList:
+                                                              getTransactions())),
+                                                ],
+                                              )),
+                                          context: context);
                                     },
                                     child: assetImages(PNGAssets.history,
                                         width: 30, height: 30)),
@@ -107,14 +172,82 @@ class _CoinChartPageState extends State<CoinChartPage>
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     GestureDetector(
+                                        onTap: () {
+                                          SideSheet.right(
+                                              width: 350,
+                                              sheetColor: Colors.transparent,
+                                              body: _LandscapeSheetWidget(
+                                                  widget: widget,
+                                                  child: Center(
+                                                    child: titleLargeText(
+                                                        'Buy ${widget.symbol?.toUpperCase()}',
+                                                        context,
+                                                        color: Colors.white),
+                                                  )),
+                                              context: context);
+                                        },
                                         child: assetImages(PNGAssets.buy,
                                             width: 30, height: 30)),
                                     height10(),
                                     GestureDetector(
+                                        onTap: () {
+                                          if (wallet == null) {
+                                            Toasts.fToast('Wallet not found');
+                                            return;
+                                          }
+                                          SideSheet.right(
+                                              width: 350,
+                                              sheetColor: Colors.transparent,
+                                              body: _LandscapeSheetWidget(
+                                                  widget: widget,
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child:
+                                                                titleLargeText(
+                                                                    'Recieve',
+                                                                    context),
+                                                          ),
+                                                          width10(),
+                                                          GestureDetector(
+                                                              onTap: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: const Icon(
+                                                                  Icons.clear)),
+                                                        ],
+                                                      ),
+                                                      height10(),
+                                                      Expanded(
+                                                        child: LayoutBuilder(
+                                                            builder: (context,
+                                                                bound) {
+                                                          infoLog(
+                                                              'bound ${bound.maxWidth}');
+                                                          infoLog(
+                                                              'bound ${bound.maxHeight}');
+                                                          return ReceiveQrCodeWidget(
+                                                              embeded: true,
+                                                              size: Size(
+                                                                  bound.maxHeight -
+                                                                      120,
+                                                                  150),
+                                                              walletModel:
+                                                                  wallet!);
+                                                        }),
+                                                      )
+                                                    ],
+                                                  )),
+                                              context: context);
+                                        },
                                         child: assetImages(PNGAssets.recieve,
                                             width: 30, height: 30)),
                                     height10(),
                                     GestureDetector(
+                                        onTap: _sendCoin,
                                         child: assetImages(PNGAssets.send,
                                             width: 30, height: 30)),
                                   ],
@@ -132,76 +265,98 @@ class _CoinChartPageState extends State<CoinChartPage>
       }
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
           overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-      return Scaffold(
-        appBar: buildCustomAppBar(
-            title: titleLargeText('Graph View', context, color: Colors.white),
-            height: kToolbarHeight + 20,
-            actions: [
-              ToggleBrightnessButton(
-                onChange: (mode) {
-                  setState(() {});
-                },
-              ),
-              // PopupMenuButton(
-              //   surfaceTintColor: Colors.white,
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10),
-              //   ),
-              //   shadowColor: getTheme.brightness == Brightness.light
-              //       ? Colors.grey
-              //       : null,
-              //   offset: const Offset(0, 30),
-              //   itemBuilder: (_) => intervals
-              //       .map((e) => PopupMenuItem(
-              //             textStyle: const TextStyle(
-              //                 color: Colors.black,
-              //                 textBaseline: TextBaseline.alphabetic),
-              //             value: e,
-              //             child: capText(e, context),
-              //           ))
-              //       .toList(),
-              //   onSelected: (value) {
-              //     setState(() {
-              //       interval = value.toString();
-              //     });
-              //     getChartData();
-              //   },
-              //   child: const Icon(Icons.more_vert),
-              // ),
-              // width10()
-            ],
-            bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(40),
-                child: TabBar(
-                    controller: tabController,
-                    physics: const BouncingScrollPhysics(),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white60,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorPadding: const EdgeInsets.all(0),
-                    // indicatorWeight: 0,
-                    indicatorColor: Colors.white,
-                    tabs: const [
-                      Tab(text: 'Chart'),
-                      Tab(text: 'Transactions')
-                    ]))),
-        body: TabBarView(
-          controller: tabController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            ListView(
-              children: [SizedBox(height: 300, child: tradingViewWidget)],
-            ),
-            const Column(
-              children: [],
-            ),
-          ],
-        ),
-        // body: buildSfChart(),
-        bottomNavigationBar:
-            tabController.index == 0 ? _buildBottomBar(context) : null,
-      );
+      return buildPortraitView(context, tradingViewWidget);
     });
+  }
+
+  Scaffold buildPortraitView(BuildContext context, Widget tradingViewWidget) {
+    return Scaffold(
+      appBar: buildCustomAppBar(
+          title: titleLargeText('Graph View', context, color: Colors.white),
+          height: kToolbarHeight + 20,
+          actions: [
+            ToggleBrightnessButton(
+              onChange: (mode) {
+                setState(() {});
+              },
+            ),
+            // PopupMenuButton(
+            //   surfaceTintColor: Colors.white,
+            //   shape: RoundedRectangleBorder(
+            //     borderRadius: BorderRadius.circular(10),
+            //   ),
+            //   shadowColor: getTheme.brightness == Brightness.light
+            //       ? Colors.grey
+            //       : null,
+            //   offset: const Offset(0, 30),
+            //   itemBuilder: (_) => intervals
+            //       .map((e) => PopupMenuItem(
+            //             textStyle: const TextStyle(
+            //                 color: Colors.black,
+            //                 textBaseline: TextBaseline.alphabetic),
+            //             value: e,
+            //             child: capText(e, context),
+            //           ))
+            //       .toList(),
+            //   onSelected: (value) {
+            //     setState(() {
+            //       interval = value.toString();
+            //     });
+            //     getChartData();
+            //   },
+            //   child: const Icon(Icons.more_vert),
+            // ),
+            // width10()
+          ],
+          bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(40),
+              child: TabBar(
+                  controller: tabController,
+                  physics: const BouncingScrollPhysics(),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorPadding: const EdgeInsets.all(0),
+                  // indicatorWeight: 0,
+                  indicatorColor: Colors.white,
+                  tabs: const [
+                    Tab(text: 'Chart'),
+                    Tab(text: 'Transactions')
+                  ]))),
+      body: TabBarView(
+        controller: tabController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          ListView(children: [SizedBox(height: 300, child: tradingViewWidget)]),
+          TransactionList(trasnsactionList: getTransactions())
+        ],
+      ),
+      // body: buildSfChart(),
+      bottomNavigationBar:
+          tabController.index == 0 ? _buildBottomBar(context) : null,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getTransactions() =>
+      SqlDb().getAll(oredrBy: 'created_at DESC').then((value) => value
+          .where((item) =>
+              (jsonDecode(item['data']))['symbol'] == symbol.toUpperCase())
+          .toList());
+  void _sendCoin() {
+    infoLog('wallet ${wallet?.toJson()}');
+
+    if (coin == null) {
+      Toasts.fToast('Coin not found');
+      return;
+    } else if (wallet == null) {
+      Toasts.fToast('Wallet not found');
+      return;
+    } else {
+      SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+      context.pushNamed(RouteName.sendCoin,
+          extra: {"wallet": wallet!.toJson(), "coin": coin!.toJson()});
+    }
   }
 
   ListView buildSfChart() {
@@ -248,9 +403,7 @@ class _CoinChartPageState extends State<CoinChartPage>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
-              onPressed: () {
-                //
-              },
+              onPressed: _sendCoin,
               label: bodyLargeText('Send', context, color: Colors.white),
               icon: assetImages(PNGAssets.send, width: 20, height: 20),
             ),
@@ -266,7 +419,20 @@ class _CoinChartPageState extends State<CoinChartPage>
                   borderRadius: BorderRadius.circular(30),
                 ),
                 onPressed: () {
-                  //
+                  if (wallet == null) {
+                    Toasts.fToast('Wallet not found');
+                    return;
+                  }
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20))),
+                    builder: (context) {
+                      return ReceiveQrCodeWidget(walletModel: wallet!);
+                    },
+                  );
                 },
                 label: bodyLargeText('Recive', context, color: Colors.white),
                 icon: assetImages(PNGAssets.recieve, width: 20, height: 20)),
@@ -507,6 +673,38 @@ class _CoinChartPageState extends State<CoinChartPage>
     // } else {
     //   return SizedBox.fromSize(size: Size.zero);
     // }
+  }
+}
+
+class _LandscapeSheetWidget extends StatelessWidget {
+  const _LandscapeSheetWidget({
+    super.key,
+    required this.widget,
+    required this.child,
+  });
+
+  final CoinChartPage widget;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(
+        right: paddingDefault,
+        left: paddingDefault,
+        top: paddingDefault,
+        bottom: paddingDefault,
+      ),
+      padding: EdgeInsets.all(paddingDefault),
+      decoration: BoxDecoration(
+          color: getTheme.brightness == Brightness.light
+              ? Colors.white
+              : Colors.blueGrey
+                  // .shade600
+                  .darken(60),
+          borderRadius: BorderRadius.circular(10)),
+      child: child,
+    );
   }
 }
 
