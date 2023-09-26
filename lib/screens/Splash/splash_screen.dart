@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                 height20(),
                 titleLargeText(AppConst.appName, context),
                 const Spacer(),
-                loaderWidget(),
+                loaderWidget(radius: 10),
                 height50(),
               ],
             ),

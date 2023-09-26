@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/default_logger.dart';
 import '/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -18,8 +19,12 @@ import 'empty_list_widget.dart';
 
 class SelectCoinWidget extends StatefulWidget {
   const SelectCoinWidget(
-      {super.key, required this.onWalletSelect, this.token = true});
+      {super.key,
+      required this.onWalletSelect,
+      this.token = true,
+      this.import = false});
   final bool token;
+  final bool import;
   final void Function(Coin walletModel, double balance) onWalletSelect;
   @override
   State<SelectCoinWidget> createState() => _SelectCoinWidgetState();
@@ -102,7 +107,7 @@ class _SelectCoinWidgetState extends State<SelectCoinWidget> {
   Widget buildBody(WalletProvider provider, ScrollController scrollController) {
     List<Coin> coins = [];
     List<Wallet> userWallets = sl.get<AuthProvider>().user.wallet ?? [];
-    if (widget.token) {
+    if (widget.token && !widget.import) {
       for (var element in provider.coins) {
         if (userWallets
             .any((wallet) => wallet.tokenName == element.parentWallet)) {
@@ -111,7 +116,12 @@ class _SelectCoinWidgetState extends State<SelectCoinWidget> {
       }
     } else {
       coins = provider.coins;
+      if (widget.import) {
+        coins.insert(
+            0, Coin(symbol: 'all', name: 'Multi Import', disabled: false));
+      }
     }
+
     return Container(
       child: (provider.loadingWallets == ButtonLoadingState.loading) ||
               (provider.loadingWallets == ButtonLoadingState.idle &&
@@ -126,7 +136,7 @@ class _SelectCoinWidgetState extends State<SelectCoinWidget> {
                   coin = coins[i];
                 }
                 return Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -135,6 +145,7 @@ class _SelectCoinWidgetState extends State<SelectCoinWidget> {
                       _CoinTileWidget(
                           loading: loading,
                           coin: coin,
+                          multiImport: !loading && widget.import && i == 0,
                           onWalletSelect: widget.onWalletSelect),
                     ],
                   ),
@@ -157,10 +168,12 @@ class _CoinTileWidget extends StatelessWidget {
       {super.key,
       required this.onWalletSelect,
       required this.loading,
-      this.coin});
+      this.coin,
+      this.multiImport = false});
   final void Function(Coin walletModel, double balance) onWalletSelect;
   final bool loading;
   final Coin? coin;
+  final bool multiImport;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +184,6 @@ class _CoinTileWidget extends StatelessWidget {
             : () async {
                 if ((coin!.disabled ?? true) == false) {
                   // context.pop();
-
                   onWalletSelect(coin!, 10);
                 } else {
                   Toasts.fToast('This wallet is disabled');
@@ -179,37 +191,28 @@ class _CoinTileWidget extends StatelessWidget {
               },
         leading: loading
             ? buildShimmer(w: 60.0, h: 60.0, shape: BoxShape.circle)
-            : CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.transparent,
-                child: buildCachedImageWithLoading(coin!.imageUrl ?? '',
-                    loadingMode: ImageLoadingMode.shimmer),
-              ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            loading
-                ? Row(
-                    children: [
-                      buildShimmer(radius: 2, w: 100, h: 13),
-                    ],
+            : multiImport
+                ? const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.transparent,
                   )
-                : Row(
-                    children: [
-                      titleLargeText(coin!.symbol ?? '', context),
-                    ],
+                : CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.transparent,
+                    child: buildCachedImageWithLoading(coin!.imageUrl ?? '',
+                        loadingMode: ImageLoadingMode.shimmer),
                   ),
-            height10(),
-            loading
-                ? Row(
-                    children: [
-                      buildShimmer(radius: 2, w: 70, h: 13),
-                    ],
-                  )
-                : capText((coin!.name ?? ''), context,
-                    color: Colors.grey, fontWeight: FontWeight.w500),
-          ],
-        ),
+        title: loading
+            ? buildShimmer(radius: 2, w: 100, h: 13)
+            : titleLargeText(
+                multiImport ? coin!.name!.toUpperCase() : (coin!.symbol ?? ''),
+                context),
+        subtitle: loading
+            ? buildShimmer(radius: 2, w: 70, h: 13)
+            : !multiImport
+                ? capText((coin!.name ?? ''), context,
+                    color: Colors.grey, fontWeight: FontWeight.w500)
+                : null,
         trailing: loading
             ? null
             : Icon(Icons.arrow_forward_ios_rounded,

@@ -188,4 +188,9 @@ class AuthProvider with ChangeNotifier {
   Future<void> saveLoginToken(String token) async =>
       await authRepo.saveLoginToken(token);
   Future<void> clearUser() async => await authRepo.clearUser();
+
+  Future<void> clear() async {
+    user = UserData();
+    notifyListeners();
+  }
 }

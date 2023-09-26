@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:candlesticks/candlesticks.dart';
@@ -6,7 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:my_global_tools/utils/date_utils.dart';
 import '../../functions/sqlDatabase.dart';
 import '../BottomNav/transaction.dart';
 import '../components/receive_qr_code_widget.dart';
@@ -49,6 +50,7 @@ class _CoinChartPageState extends State<CoinChartPage>
   late String symbol;
   Coin? coin;
   Wallet? wallet;
+  ColorScheme? colorScheme;
 
   @override
   void initState() {
@@ -58,18 +60,33 @@ class _CoinChartPageState extends State<CoinChartPage>
       if (tabController.index == 0) {
         future(1000, () => SystemChrome.setPreferredOrientations([]));
       } else {
-        // SystemChrome.setPreferredOrientations(
-        // [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+        SystemChrome.setPreferredOrientations(
+            [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
       }
       setState(() {});
     });
     symbol = widget.symbol!.toLowerCase().split('usdt').first;
+    intCoin();
+    getChartData();
+    getCurrentPrice();
+    _tooltip = TooltipBehavior(enable: true);
+    _trackballBehavior = TrackballBehavior(
+        enable: true, activationMode: ActivationMode.singleTap);
+
+    SystemChrome.setPreferredOrientations([]);
+    super.initState();
+  }
+
+  intCoin() async {
     try {
       coin = sl
           .get<DashboardProvider>()
           .coinModel!
           .coins!
           .firstWhere((element) => element.symbol!.toLowerCase() == symbol);
+      colorScheme = await ColorScheme.fromImageProvider(
+          provider: NetworkImage(
+              coin!.imageUrl ?? 'https://via.placeholder.com/150'));
       if (coin != null) {
         wallet = sl
             .get<AuthProvider>()
@@ -77,18 +94,12 @@ class _CoinChartPageState extends State<CoinChartPage>
             .wallet!
             .firstWhere((element) => element.tokenName == coin!.parentWallet);
       }
+      setState(() {
+        infoLog('coin details --> ${coin!.toJson()} ${colorScheme?.primary}');
+      });
     } catch (e) {
-      errorLog(e.toString(), 'coin chart page');
+      errorLog(e.toString(), 'coin chart page error');
     }
-
-    // getChartData();
-    // getCurrentPrice();
-    _tooltip = TooltipBehavior(enable: true);
-    _trackballBehavior = TrackballBehavior(
-        enable: true, activationMode: ActivationMode.singleTap);
-
-    SystemChrome.setPreferredOrientations([]);
-    super.initState();
   }
 
   @override
@@ -327,7 +338,68 @@ class _CoinChartPageState extends State<CoinChartPage>
         controller: tabController,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          ListView(children: [SizedBox(height: 300, child: tradingViewWidget)]),
+          ListView(
+            children: [
+              // SizedBox(height: 300, child: tradingViewWidget),
+              height50(),
+              if (coin != null)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 7,
+                      backgroundColor: Colors.transparent,
+                      child: buildCachedImageWithLoading(coin!.imageUrl ?? '',
+                          loadingMode: ImageLoadingMode.shimmer),
+                    ),
+                    width10(),
+                    bodyMedText('${coin!.symbol ?? ''} Live', context,
+                        color:
+                            colorScheme != null ? colorScheme!.primary : null,
+                        fontWeight: FontWeight.w500),
+                  ],
+                ),
+              height5(),
+              ValueListenableBuilder(
+                valueListenable: dragPrice,
+                builder: (context, value, child) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      titleLargeText(
+                        '\$$value',
+                        context,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 23,
+                      ),
+                    ],
+                  );
+                },
+              ),
+              ValueListenableBuilder(
+                valueListenable: dragTime,
+                builder: (context, value, child) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      capText(
+                          MyDateUtils.formatDate(
+                              DateTime.fromMillisecondsSinceEpoch(value),
+                              'dd MMM, yyyy hh:mm a'),
+                          context),
+                    ],
+                  );
+                },
+              ),
+              height20(),
+              //show graph
+              SizedBox(
+                  height: (getWidth > getHeight ? getHeight : getWidth) -
+                      kToolbarHeight -
+                      kBottomNavigationBarHeight,
+                  child: buildSfChart())
+            ],
+          ),
           TransactionList(trasnsactionList: getTransactions())
         ],
       ),
@@ -360,29 +432,67 @@ class _CoinChartPageState extends State<CoinChartPage>
     }
   }
 
-  ListView buildSfChart() {
-    return ListView(
+  Widget buildSfChart() {
+    return Column(
       children: [
-        Card(
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+        Expanded(
+          child: Card(
+            surfaceTintColor: Colors.transparent,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shadowColor: getTheme.brightness == Brightness.light
+                ? Colors.grey.withOpacity(0.2)
+                : Colors.transparent,
+            elevation: 0,
+            margin: const EdgeInsets.all(0),
+            child: SizedBox(
+                // height: (getWidth > getHeight ? getHeight : getWidth) -
+                //     kToolbarHeight -
+                //     kBottomNavigationBarHeight -
+                //     144,
+                // padding: const EdgeInsets.only(right: 8.0),
+                child: buildSfChartData()),
           ),
-          shadowColor: getTheme.brightness == Brightness.light
-              ? Colors.grey.withOpacity(0.2)
-              : Colors.transparent,
-          elevation: 10,
-          margin: const EdgeInsets.all(0),
-          child: Container(
-              height: (getWidth > getHeight ? getHeight : getWidth) -
-                  kToolbarHeight -
-                  kBottomNavigationBarHeight,
-              padding: const EdgeInsets.only(right: 8.0),
-              child:
-                  loadingGraph ? loaderWidget(radius: 10) : buildSfChartData()),
         ),
 
-        //     //
+        SizedBox(
+            height: 50,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 8.0),
+              children: [
+                ...intervals
+                    .map((e) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ChoiceChip(
+                            side: BorderSide(
+                                color: interval == e
+                                    ? Colors.transparent
+                                    : Colors.blueGrey,
+                                width: 1),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50)),
+                            avatar: null,
+                            onSelected: (bool) {
+                              setState(() {
+                                interval = e;
+                              });
+                              getChartData();
+                            },
+                            iconTheme: IconThemeData(
+                                color:
+                                    interval == e ? Colors.white : Colors.red),
+                            selected: interval == e,
+                            selectedColor: Colors.blueGrey,
+                            label: capText(e, context,
+                                color: interval == e
+                                    ? Colors.white
+                                    : Colors.blueGrey),
+                          ),
+                        ))
+                    .toList()
+              ],
+            )),
         // Container(height: 300, child: buildCandleStickChart()),
         //     // Spacer(),
       ],
@@ -392,7 +502,10 @@ class _CoinChartPageState extends State<CoinChartPage>
 
   Padding _buildBottomBar(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(paddingDefault),
+      padding: EdgeInsets.only(
+          bottom: Platform.isIOS ? spaceDefault + 20 : spaceDefault,
+          left: paddingDefault,
+          right: paddingDefault),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -472,6 +585,9 @@ class _CoinChartPageState extends State<CoinChartPage>
   String? priceErr;
   final intervals = ['1m', '5m', '30m', '1h', '12h', '1d', '1w', '1M'];
 
+  ValueNotifier<int> dragTime = ValueNotifier(0);
+  ValueNotifier<double> dragPrice = ValueNotifier(0);
+
   Future<ApiResponse> hitApi(String url) async {
     try {
       Response response = await dio.get(url);
@@ -501,6 +617,10 @@ class _CoinChartPageState extends State<CoinChartPage>
             .reversed
             .toList();
         data = chartDataList;
+        if (data.isNotEmpty) {
+          dragTime.value = data.last.open_time!;
+          dragPrice.value = data.last.close ?? 0;
+        }
         Toasts.fToast('${data.length} Data loaded');
       } else {
         errorLog(apiResponse.response!.data.toString(), 'getChartData');
@@ -555,73 +675,133 @@ class _CoinChartPageState extends State<CoinChartPage>
   Widget buildSfChartData() {
     return Stack(
       children: [
+        // SfCartesianChart(
+        //   title: ChartTitle(
+        //     text: '${widget.symbol?.toUpperCase()} Chart',
+        //     textStyle: const TextStyle(fontSize: 10),
+        //   ),
+        //   primaryXAxis: DateTimeAxis(
+        //     dateFormat: interval == '1s'
+        //         ? DateFormat.ms()
+        //         : interval.contains('m')
+        //             // ? DateFormat.Hm()
+        //             // : interval == '1h'
+        //             ? DateFormat.Hm()
+        //             : interval.contains('h')
+        //                 ? DateFormat.Hm()
+        //                 : interval.contains('d')
+        //                     ? DateFormat.Md()
+        //                     : interval.contains('w')
+        //                         ? DateFormat.MEd()
+        //                         : interval.contains('M')
+        //                             ? DateFormat.yMMM()
+        //                             : DateFormat.y(),
+        //     interval: 1,
+        //     // intervalType: DateTimeIntervalType.months,
+        //     // minimum: DateTime(2016),
+        //     // maximum: DateTime(2016, 10),
+        //     // autoScrollingMode: AutoScrollingMode.start,
+        //     // autoScrollingDelta: 10,
+        //     // autoScrollingDeltaType: DateTimeIntervalType.days,
+        //     labelStyle: const TextStyle(fontSize: 8),
+        //     majorGridLines: const MajorGridLines(width: 0),
+        //   ),
+        //   primaryYAxis: NumericAxis(
+        //     labelStyle: const TextStyle(fontSize: 8),
+        //     // minimum: 140,
+        //     // maximum: 60,
+        //     // interval: 20,
+        //     // labelFormat: r'${value}',
+        //     // axisLine: const AxisLine(width: 0),
+        //   ),
+        //   // primaryYAxis:
+        //   // NumericAxis(minimum: 0, maximum: 40, interval: 10),
+        //   tooltipBehavior: _tooltip,
+        //   plotAreaBorderWidth: 0,
+        //   trackballBehavior: _trackballBehavior,
+        //   isTransposed: false,
+        //   enableAxisAnimation: true,
+        //   enableMultiSelection: true,
+        //   series: <ChartSeries<ChartData, DateTime>>[
+        //     if (data.isNotEmpty)
+        //       CandleSeries<ChartData, DateTime>(
+        //         showIndicationForSameValues: true,
+        //         enableSolidCandles: true,
+        //         sortingOrder: SortingOrder.ascending,
+        //         dataSource: data.sublist((data.length - 20).floor()),
+        //         xValueMapper: (ChartData data, _) =>
+        //             DateTime.fromMillisecondsSinceEpoch(data.open_time!),
+        //         lowValueMapper: (ChartData data, _) => data.low,
+        //         highValueMapper: (ChartData data, _) => data.high,
+        //         openValueMapper: (ChartData data, _) => data.open,
+        //         closeValueMapper: (ChartData data, _) => data.close,
+        //         name: 'Gold',
+        //         bearColor: const Color.fromRGBO(8, 142, 255, 1),
+        //         bullColor: const Color.fromRGBO(255, 50, 50, 1),
+        //       ),
+        //   ],
+        //   loadMoreIndicatorBuilder: getLoadMoreViewBuilder,
+        // ),
+
         SfCartesianChart(
-          title: ChartTitle(
-            text: '${widget.symbol?.toUpperCase()} Chart',
-            textStyle: const TextStyle(fontSize: 10),
-          ),
-          primaryXAxis: DateTimeAxis(
-            dateFormat: interval == '1s'
-                ? DateFormat.ms()
-                : interval.contains('m')
-                    // ? DateFormat.Hm()
-                    // : interval == '1h'
-                    ? DateFormat.Hm()
-                    : interval.contains('h')
-                        ? DateFormat.Hm()
-                        : interval.contains('d')
-                            ? DateFormat.Md()
-                            : interval.contains('w')
-                                ? DateFormat.MEd()
-                                : interval.contains('M')
-                                    ? DateFormat.yMMM()
-                                    : DateFormat.y(),
-            interval: 1,
-            // intervalType: DateTimeIntervalType.months,
-            // minimum: DateTime(2016),
-            // maximum: DateTime(2016, 10),
-            // autoScrollingMode: AutoScrollingMode.start,
-            // autoScrollingDelta: 10,
-            // autoScrollingDeltaType: DateTimeIntervalType.days,
-            labelStyle: const TextStyle(fontSize: 8),
-            majorGridLines: const MajorGridLines(width: 0),
-          ),
-          primaryYAxis: NumericAxis(
-            labelStyle: const TextStyle(fontSize: 8),
-            // minimum: 140,
-            // maximum: 60,
-            // interval: 20,
-            // labelFormat: r'${value}',
-            // axisLine: const AxisLine(width: 0),
-          ),
-          // primaryYAxis:
-          // NumericAxis(minimum: 0, maximum: 40, interval: 10),
-          tooltipBehavior: _tooltip,
-          plotAreaBorderWidth: 0,
+          borderWidth: 0,
           trackballBehavior: _trackballBehavior,
-          isTransposed: false,
           enableAxisAnimation: true,
           enableMultiSelection: true,
-          series: <ChartSeries<ChartData, DateTime>>[
-            if (data.isNotEmpty)
-              CandleSeries<ChartData, DateTime>(
-                showIndicationForSameValues: true,
-                enableSolidCandles: true,
-                sortingOrder: SortingOrder.ascending,
-                dataSource: data.sublist((data.length - 20).floor()),
+          enableSideBySideSeriesPlacement: false,
+          plotAreaBorderWidth: 0,
+          margin:
+              const EdgeInsets.only(top: 20, left: 10, right: 10, bottom: 10),
+          borderColor: Colors.transparent,
+          primaryXAxis: DateTimeAxis(
+            labelStyle: const TextStyle(fontSize: 0),
+            majorGridLines: const MajorGridLines(width: 0),
+            minorGridLines: const MinorGridLines(width: 0),
+            majorTickLines: const MajorTickLines(size: 0),
+            minorTickLines: const MinorTickLines(size: 0),
+          ),
+          primaryYAxis: NumericAxis(
+            labelStyle: const TextStyle(fontSize: 0),
+            majorGridLines: const MajorGridLines(width: 0),
+            minorGridLines: const MinorGridLines(width: 0),
+            majorTickLines: const MajorTickLines(size: 0),
+            minorTickLines: const MinorTickLines(size: 0),
+          ),
+          onTooltipRender: (arg) {
+            infoLog(arg.toString(), 'onTooltipRender');
+          },
+          onTrackballPositionChanging: (arg) {
+            infoLog(arg.toString(), 'onTrackballPositionChanging');
+            // setState(() {
+            dragTime.value = arg.chartPointInfo.chartDataPoint!.xValue;
+            dragPrice.value = arg.chartPointInfo.chartDataPoint!.yValue;
+            // });
+          },
+          series: <ChartSeries>[
+            // if (data.isNotEmpty && !loadingGraph)
+            FastLineSeries<ChartData, DateTime>(
+                // markerSettings: const MarkerSettings(isVisible: true),
+                // dataLabelSettings: const DataLabelSettings(isVisible: false),
+                // dataLabelMapper: (ChartData data, _) => data.close.toString(),
+                onPointTap: (ChartPointDetails details) {
+                  infoLog(details.pointIndex.toString(), 'onPointTap');
+                },
+                enableTooltip: true,
+                dataSource:
+                    data.sublist(data.length - (data.length > 5 ? 15 : 0)),
                 xValueMapper: (ChartData data, _) =>
                     DateTime.fromMillisecondsSinceEpoch(data.open_time!),
-                lowValueMapper: (ChartData data, _) => data.low,
-                highValueMapper: (ChartData data, _) => data.high,
-                openValueMapper: (ChartData data, _) => data.open,
-                closeValueMapper: (ChartData data, _) => data.close,
-                name: 'Gold',
-                bearColor: const Color.fromRGBO(8, 142, 255, 1),
-                bullColor: const Color.fromRGBO(255, 50, 50, 1),
-              ),
+                yValueMapper: (ChartData data, _) => data.close)
           ],
-          loadMoreIndicatorBuilder: getLoadMoreViewBuilder,
         ),
+
+        Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            right: 0,
+            child: Visibility(
+                visible: loadingGraph, child: loaderWidget(radius: 10))),
         Positioned(
             right: paddingDefault,
             top: paddingDefault,
@@ -634,7 +814,7 @@ class _CoinChartPageState extends State<CoinChartPage>
                     text: TextSpan(
                       text: priceErr != null
                           ? 'Price error'
-                          : '\$${price.toStringAsFixed(5)}',
+                          : 'Current: \$${price.toStringAsFixed(5)}',
                       style: TextStyle(
                           color: priceErr != null ? Colors.red : Colors.green,
                           fontSize: 13,

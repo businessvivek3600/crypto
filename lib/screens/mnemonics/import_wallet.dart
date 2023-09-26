@@ -25,8 +25,10 @@ import '/utils/text.dart';
 import '../../widgets/FadeScaleTransitionWidget.dart';
 
 class ImportWalletScreen extends StatefulWidget {
-  const ImportWalletScreen({super.key, this.token = false});
+  const ImportWalletScreen(
+      {super.key, this.token = false, this.import = false});
   final bool token;
+  final bool import;
 
   @override
   State<ImportWalletScreen> createState() => _ImportWalletScreenState();
@@ -115,12 +117,9 @@ class _ImportWalletScreenState extends State<ImportWalletScreen> {
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: paddingDefault,
                                   vertical: paddingDefault / 2),
-                              leading: coin != null
-                                  ? Image.network(
-                                      coin!.imageUrl ?? '',
-                                      height: 30,
-                                      width: 30,
-                                    )
+                              leading: coin != null && coin!.symbol != 'all'
+                                  ? Image.network(coin!.imageUrl ?? '',
+                                      height: 30, width: 30)
                                   : const Icon(Icons.mode_standby_sharp,
                                       color: Colors.white),
                               title: coin != null
@@ -249,7 +248,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen> {
 
       (Map<String, dynamic>, bool)? data = await sl
           .get<WalletProvider>()
-          .verifyMnemonics(str, imported: false, chain: coin!.contractAddress);
+          .verifyMnemonics(str, imported: true, chain: coin!.contractAddress);
       if (data != null && data.$2) {
         try {
           if (!widget.token) {
@@ -326,7 +325,8 @@ class _ImportWalletScreenState extends State<ImportWalletScreen> {
       isScrollControlled: true,
       builder: (context) {
         return SelectCoinWidget(
-          token: false,
+          token: widget.token,
+          import: widget.import,
           onWalletSelect: (Coin coin, double balance) async {
             this.coin = coin;
             context.pop();

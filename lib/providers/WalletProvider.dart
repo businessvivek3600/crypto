@@ -401,4 +401,22 @@ class WalletProvider extends ChangeNotifier {
     }
     return null;
   }
+
+  Future<void> clear() async {
+    uniqueNumbers.clear();
+    options.clear();
+    specificIndex = null;
+    loadingInit = true;
+    creatingMnemonics = ButtonLoadingState.idle;
+    errorText = null;
+    verifyingMnemonics = ButtonLoadingState.idle;
+    verifyErrorText = null;
+    loadingWallets = ButtonLoadingState.idle;
+    coins.clear();
+    recentUsers.clear();
+    gettingBalance = ButtonLoadingState.idle;
+    loadingConfirmation = ButtonLoadingState.idle;
+    confirmationText = null;
+    loadingInitTrans = ButtonLoadingState.idle;
+  }
 }

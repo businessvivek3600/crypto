@@ -104,80 +104,61 @@ class _SelectWalletWidgetState extends State<SelectWalletWidget> {
                 if (!loading) {
                   wallet = wallets[i];
                 }
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // bodyMedText('Etherium', context,
-                      //     color: Colors.grey, fontWeight: FontWeight.w500),
-                      ListTile(
-                          // enabled: loading
-                          //     ? false
-                          //     : ((wallet!.disabled ?? true) == false),
-                          onTap: loading
-                              ? null
-                              : () {
-                                  // if ((wallet!.disabled ?? true) == false) {
-                                  //   // context.pop();
-                                  widget.onWalletSelect(wallet!);
-                                  // } else {
-                                  //   Toasts.fToast('This wallet is disabled');
-                                  // }
-                                },
-                          leading: loading
-                              ? buildShimmer(
-                                  w: 60.0, h: 60.0, shape: BoxShape.circle)
-                              : CircleAvatar(
-                                  radius: 30,
-                                  backgroundColor: Colors.transparent,
-                                  child: buildCachedImageWithLoading(
-                                      wallet!.imageUrl ?? '',
-                                      loadingMode: ImageLoadingMode.shimmer),
-                                ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              loading
-                                  ? Row(
-                                      children: [
-                                        buildShimmer(radius: 2, w: 100, h: 13),
-                                      ],
-                                    )
-                                  : Row(
-                                      children: [
-                                        titleLargeText(
-                                            wallet!.tokenName ?? '', context),
-                                      ],
-                                    ),
-                              height10(),
-                              loading
-                                  ? Row(
-                                      children: [
-                                        buildShimmer(radius: 2, w: 70, h: 13),
-                                      ],
-                                    )
-                                  : capText(
-                                      (wallet!.walletAddress ?? ''), context,
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.w500),
-                            ],
-                          ),
-                          trailing: loading
-                              ? null
-                              : Icon(Icons.arrow_forward_ios_rounded,
-                                  size: 15,
-                                  color: !loading ? Colors.grey : null)),
-                    ],
-                  ),
-                );
+                return buildWalletTile(loading, wallet, context);
               },
               itemCount: loading ? 7 : wallets.length,
             )
-          : const EmptyListWidget(
-              text: 'No Wallets Found',
-              asset: LottieAssets.wallet,
-              height: 700),
+          : const Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                EmptyListWidget(
+                  text: 'No Wallets Found',
+                  asset: LottieAssets.wallet,
+                  height: 300,
+                ),
+              ],
+            ),
     );
+  }
+
+  Widget buildWalletTile(bool loading, Wallet? wallet, BuildContext context) {
+    return ListTile(
+        // enabled: loading
+        //     ? false
+        //     : ((wallet!.disabled ?? true) == false),
+        onTap: loading
+            ? null
+            : () {
+                // if ((wallet!.disabled ?? true) == false) {
+                //   // context.pop();
+                widget.onWalletSelect(wallet!);
+                // } else {
+                //   Toasts.fToast('This wallet is disabled');
+                // }
+              },
+        leading: loading
+            ? buildShimmer(w: 60.0, h: 60.0, shape: BoxShape.circle)
+            : CircleAvatar(
+                radius: 25,
+                backgroundColor: Colors.transparent,
+                child: buildCachedImageWithLoading(wallet!.imageUrl ?? '',
+                    loadingMode: ImageLoadingMode.shimmer),
+              ),
+        title: loading
+            ? Row(children: [buildShimmer(radius: 2, w: 100, h: 13)])
+            : Row(children: [titleLargeText(wallet!.tokenName ?? '', context)]),
+        subtitle: loading
+            ? buildShimmer(radius: 2, w: 100, h: 13)
+            : capText(
+                // take first 5 chars
+                '${wallet!.walletAddress!.substring(0, 5)}...${wallet.walletAddress!.substring(wallet.walletAddress!.length - 5)}',
+                context,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500),
+        trailing: loading
+            ? null
+            : Icon(Icons.arrow_forward_ios_rounded,
+                size: 15, color: !loading ? Colors.grey : null));
   }
 }

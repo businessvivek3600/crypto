@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_global_tools/constants/asset_constants.dart';
+import 'package:my_global_tools/utils/picture_utils.dart';
 import '../../utils/default_logger.dart';
 import '/functions/functions.dart';
 import '/screens/components/empty_list_widget.dart';
@@ -70,7 +72,15 @@ class _TransactionListState extends State<TransactionList> {
             } else if (snapshot.hasData) {
               return _TransactionListView(snapshot.data ?? []);
             } else {
-              return Center(child: titleLargeText('No Data', context));
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  assetLottie(LottieAssets.history, height: 200, width: 200),
+                  Center(
+                      child: titleLargeText('No transaction found', context)),
+                ],
+              );
             }
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -161,136 +171,135 @@ class _TransactionListViewState extends State<_TransactionListView> {
           (context, i) {
             Map<String, dynamic> data = jsonDecode(items.value[i]['data']);
             // infoLog(data.toString());
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: paddingDefault),
-              child: GestureDetector(
-                onTap: () {
-                  context.pushNamed(RouteName.tx, extra: data);
-                },
-                child: Column(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(paddingDefault),
-                      // margin: EdgeInsets.only(bottom: paddingDefault),
-                      decoration: BoxDecoration(
-                        // border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor:
-                                getTheme.colorScheme.primary.withOpacity(0.2),
-                            backgroundImage:
-                                NetworkImage(data['imageUrl'] ?? ''),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
+            return buildTransactionTile(context, data, items, i);
+          },
+          childCount: items.value.length,
+        ),
+      ),
+    );
+  }
+
+  Padding buildTransactionTile(BuildContext context, Map<String, dynamic> data,
+      MapEntry<String, List<Map<String, dynamic>>> items, int i) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: paddingDefault),
+      child: GestureDetector(
+        onTap: () {
+          context.pushNamed(RouteName.tx, extra: data);
+        },
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(paddingDefault),
+              decoration: BoxDecoration(
+                  // borderRadius: BorderRadius.circular(10),
+                  ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    backgroundColor:
+                        getTheme.colorScheme.primary.withOpacity(0.2),
+                    backgroundImage: NetworkImage(data['imageUrl'] ?? ''),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        // titleLargeText(data['symbol'] ?? '', context),
+                        //richtext for to and toaddress
+                        RichText(
+                            text: TextSpan(
+                                text: 'To: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        getTheme.textTheme.titleLarge?.color),
+                                children: [
+                              TextSpan(
+                                  text: data['toAddress'] ?? '',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: getTheme
+                                          .textTheme.titleLarge?.color
+                                          ?.withOpacity(0.5),
+                                      fontWeight: FontWeight.bold)),
+                            ])),
+                        height10(),
+                        capText(
+                            ('🪙 ${data['amount'] ?? ''}').toString(), context),
+                      ],
+                    ),
+                  ),
+                  width10(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      PopupMenuButton<String>(
+                        surfaceTintColor: getTheme.brightness == Brightness.dark
+                            ? null
+                            : Colors.white,
+                        clipBehavior: Clip.hardEdge,
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            value: 'copy',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                // titleLargeText(data['symbol'] ?? '', context),
-                                //richtext for to and toaddress
-                                RichText(
-                                    text: TextSpan(
-                                        text: 'To: ',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: getTheme
-                                                .textTheme.titleLarge?.color),
-                                        children: [
-                                      TextSpan(
-                                          text: data['toAddress'] ?? '',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: getTheme
-                                                  .textTheme.titleLarge?.color
-                                                  ?.withOpacity(0.5),
-                                              fontWeight: FontWeight.bold)),
-                                    ])),
-                                height10(),
-                                capText(
-                                    ('🪙 ${data['amount'] ?? ''}').toString(),
-                                    context),
+                                const Icon(Icons.copy, size: 15),
+                                width10(),
+                                capText('Copy Transaction Hash', context),
                               ],
                             ),
                           ),
-                          width10(),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              PopupMenuButton<String>(
-                                surfaceTintColor:
-                                    getTheme.brightness == Brightness.dark
-                                        ? null
-                                        : Colors.white,
-                                clipBehavior: Clip.hardEdge,
-                                itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry<String>>[
-                                  PopupMenuItem<String>(
-                                    value: 'copy',
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.copy, size: 15),
-                                        width10(),
-                                        capText(
-                                            'Copy Transaction Hash', context),
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    value: 'details',
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.launch, size: 15),
-                                        width10(),
-                                        capText('Transaction Details', context),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                onSelected: (String value) {
-                                  if (value == 'copy') {
-                                    copyToClipboard(data['hash'] ?? '',
-                                        'Transaction Hash Copied');
-                                  } else if (value == 'details') {
-                                    context.pushNamed(RouteName.tx,
-                                        extra: data);
-                                  }
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Icon(Icons.more_vert),
-                                ),
-                              ),
-                              capText(
-                                  MyDateUtils.formatDate(
-                                      items.value[i]['created_at'] ?? '',
-                                      'hh:mm a'),
-                                  context,
-                                  fontSize: 8),
-                            ],
+                          PopupMenuItem<String>(
+                            value: 'details',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.launch, size: 15),
+                                width10(),
+                                capText('Transaction Details', context),
+                              ],
+                            ),
                           ),
                         ],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        onSelected: (String value) {
+                          if (value == 'copy') {
+                            copyToClipboard(
+                                data['hash'] ?? '', 'Transaction Hash Copied');
+                          } else if (value == 'details') {
+                            context.pushNamed(RouteName.tx, extra: data);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.more_vert),
+                        ),
                       ),
-                    ),
-                    if (i < items.value.length - 1)
-                      Divider(
-                        thickness: 1,
-                        color: getTheme.colorScheme.primary.withOpacity(0.2),
-                      ),
-                  ],
-                ),
+                      height10(),
+                      capText(
+                          MyDateUtils.formatDate(
+                              items.value[i]['created_at'] ?? '', 'hh:mm a'),
+                          context,
+                          fontSize: 8),
+                    ],
+                  ),
+                ],
               ),
-            );
-          },
-          childCount: items.value.length,
+            ),
+            if (i < items.value.length - 1)
+              Divider(
+                thickness: 1,
+                color: getTheme.colorScheme.primary.withOpacity(0.2),
+              ),
+          ],
         ),
       ),
     );

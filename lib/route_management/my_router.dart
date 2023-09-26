@@ -204,7 +204,9 @@ class MyRouter {
         return const CreateUserName();
       }, null, subPath: false),
       _newRoute2(RouteName.importWallet, (GoRouterState state) {
-        return ImportWalletScreen(token: state.queryParameters['token'] == '1');
+        return ImportWalletScreen(
+            token: state.queryParameters['token'] == '1',
+            import: state.queryParameters['import'] == '1');
       }, null, subPath: false),
 
       ///authentication

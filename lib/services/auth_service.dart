@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:my_global_tools/functions/sqlDatabase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/WalletProvider.dart';
 import '../providers/auth_provider.dart';
 import '/screens/Onboardings/on_boarding_page.dart';
 import '/utils/default_logger.dart';
@@ -123,7 +125,15 @@ class StreamAuth {
     await authProvider.updateUser(UserData());
     await APICacheManager().emptyCache();
     (await SharedPreferences.getInstance()).clear();
+    await SqlDb().dropTable();
+    await clearControllers();
 
     _userStreamController.add(await authRepo.getUser());
+  }
+
+  clearControllers() async {
+    await sl.get<DashboardProvider>().clear();
+    await sl.get<AuthProvider>().clear();
+    await sl.get<WalletProvider>().clear();
   }
 }

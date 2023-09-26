@@ -5,6 +5,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:my_global_tools/constants/app_const.dart';
 import '../../utils/color.dart';
 import '../components/appbar.dart';
 import '/models/user/user_data_model.dart';
@@ -21,8 +22,6 @@ import '../../repo_injection.dart';
 import '/constants/asset_constants.dart';
 import '/route_management/route_name.dart';
 import '/utils/picture_utils.dart';
-import 'package:random_avatar/random_avatar.dart';
-import '/functions/functions.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';
 import '/utils/default_logger.dart';
@@ -33,9 +32,6 @@ import '/widgets/MultiStageButton.dart';
 import '/widgets/buttonStyle.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
-
-import '../../services/auth_service.dart';
-import 'transaction.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -145,85 +141,88 @@ class _HomePageState extends State<HomePage> {
                     priceChangeColor =
                         (colorText ?? '') == 'red' ? Colors.red : Colors.green;
                   }
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ListTile(
-                      onTap: !loading
-                          ? () {
-                              infoLog(coins!.toJson().toString(), 'coins');
-                              context.pushNamed(RouteName.chart,
-                                  queryParameters: {
-                                    'symbol': '${coins.symbol}${'usdt'}'
-                                  });
-                            }
-                          : null,
-                      leading: loading
-                          ? buildShimmer(
-                              w: 60.0, h: 60.0, shape: BoxShape.circle)
-                          : CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.transparent,
-                              child: buildCachedImageWithLoading(
-                                  coins!.imageUrl ?? '',
-                                  loadingMode: ImageLoadingMode.shimmer),
-                            ),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          loading
-                              ? Row(
-                                  children: [
-                                    buildShimmer(radius: 2, w: 100, h: 13),
-                                  ],
-                                )
-                              : Row(
-                                  children: [
-                                    titleLargeText(
-                                        coins!.symbol ?? '', context),
-                                  ],
-                                ),
-                          height10(),
-                          loading
-                              ? Row(
-                                  children: [
-                                    buildShimmer(radius: 2, w: 70, h: 13),
-                                  ],
-                                )
-                              : capText((coins!.name ?? ''), context,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500),
-                        ],
-                      ),
-                      trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (provider.graphType != CoinGraphType.year)
-                            loading
-                                ? buildShimmer(radius: 2, w: 70, h: 13)
-                                : capText('${priceChange.toStringAsFixed(3)}%',
-                                    context,
-                                    color: priceChangeColor,
-                                    fontWeight: FontWeight.w500),
-                          height10(),
-                          loading
-                              ? buildShimmer(radius: 2, w: 40, h: 13)
-                              : capText(
-                                  '\$${(coins!.price ?? 0).toStringAsFixed(4)}',
-                                  context,
-                                  color: Colors.grey),
-                        ],
-                      ),
-                    ),
-                  );
+                  return buildCoinTile(loading, coins, context, provider,
+                      priceChange, priceChangeColor);
                 },
                 childCount: provider.loadingCoins == ButtonLoadingState.loading
                     ? 7
                     : provider.coinModel!.coins!.length,
               ),
             )
-          : SliverToBoxAdapter(
-              child: assetImages(PNGAssets.appLogo, height: 700)),
+          : SliverToBoxAdapter(child: LayoutBuilder(builder: (context, b) {
+              return SizedBox(
+                height: getHeight - 400,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    assetLottie(LottieAssets.jumpingCoin, width: 100),
+                    height20(),
+                    bodyLargeText('No Coins Found', context,
+                        fontWeight: FontWeight.w500),
+                  ],
+                ),
+              );
+            })),
+    );
+  }
+
+  Padding buildCoinTile(bool loading, Coin? coin, BuildContext context,
+      DashboardProvider provider, double priceChange, Color? priceChangeColor) {
+    return Padding(
+      padding: const EdgeInsets.all(0.0),
+      child: ListTile(
+        onTap: !loading
+            ? () {
+                infoLog(coin!.toJson().toString(), 'coins');
+                context.pushNamed(RouteName.chart,
+                    queryParameters: {'symbol': '${coin.symbol}${'usdt'}'});
+              }
+            : null,
+        leading: loading
+            ? buildShimmer(w: 40.0, h: 40.0, shape: BoxShape.circle)
+            : CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.transparent,
+                child: buildCachedImageWithLoading(coin!.imageUrl ?? '',
+                    loadingMode: ImageLoadingMode.shimmer),
+              ),
+        title: loading
+            ? Row(
+                children: [
+                  buildShimmer(radius: 2, w: 100, h: 13),
+                ],
+              )
+            : Row(
+                children: [
+                  bodyLargeText(coin!.symbol ?? '', context,
+                      fontWeight: FontWeight.w800),
+                ],
+              ),
+        subtitle: loading
+            ? Row(
+                children: [
+                  buildShimmer(radius: 2, w: 70, h: 13),
+                ],
+              )
+            : capText((coin!.name ?? ''), context,
+                color: Colors.grey, fontWeight: FontWeight.w500),
+        trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (provider.graphType != CoinGraphType.year)
+              loading
+                  ? buildShimmer(radius: 2, w: 70, h: 13)
+                  : capText('${priceChange.toStringAsFixed(3)}%', context,
+                      color: priceChangeColor, fontWeight: FontWeight.w500),
+            height5(),
+            loading
+                ? buildShimmer(radius: 2, w: 40, h: 13)
+                : capText('\$${(coin!.price ?? 0).toStringAsFixed(4)}', context,
+                    color: Colors.grey),
+          ],
+        ),
+      ),
     );
   }
 
@@ -292,6 +291,7 @@ class _HomePageState extends State<HomePage> {
                               isScrollControlled: true,
                               builder: (context) {
                                 return SelectCoinWidget(
+                                  import: false,
                                   onWalletSelect:
                                       (Coin coin, double balance) async {
                                     successLog(coin.toJson().toString());
@@ -495,7 +495,7 @@ class _HomePageState extends State<HomePage> {
                     TextButton.icon(
                       onPressed: () {
                         context.pushNamed(RouteName.importWallet,
-                            queryParameters: {'token': '1'});
+                            queryParameters: {'token': '1', 'import': '1'});
                         /* showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -540,44 +540,45 @@ class _HomePageState extends State<HomePage> {
       isSliver: true,
       title: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  getLang.helloWorld,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
+          assetImages(PNGAssets.appLogo, width: 50, height: 50),
+          width10(),
+          titleLargeText(AppConst.appName, context,
+              color: Colors.white, fontSize: 20),
         ],
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            bodyLargeText('Wallet Balance', context,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.9)),
-            Provider.of<WalletProvider>(context, listen: true).gettingBalance ==
-                    ButtonLoadingState.loading
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: loaderWidget(radius: 10),
-                  )
-                : displayLarge(
-                    NumberFormat.currency(
-                            locale: "en_US", symbol: '\$', decimalDigits: 6)
-                        .format(walletBalance),
-                    context,
-                    textAlign: TextAlign.center,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700),
-          ],
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: spaceDefault),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  bodyLargeText('Wallet Balance', context,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white.withOpacity(0.7)),
+                ],
+              ),
+              Provider.of<WalletProvider>(context, listen: true)
+                          .gettingBalance ==
+                      ButtonLoadingState.loading
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: loaderWidget(radius: 10),
+                    )
+                  : titleLargeText(
+                      NumberFormat.currency(
+                              locale: "en_US", symbol: '\$', decimalDigits: 6)
+                          .format(walletBalance),
+                      context,
+                      fontSize: 20,
+                      textAlign: TextAlign.center,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700),
+            ],
+          ),
         ),
       ),
       actions: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../Bookings/booking_details_page.dart';
 import '../BottomNav/dash_home_page.dart';
+import '../BottomNav/swapCoinsPage.dart';
 import '../BottomNav/transaction.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';
@@ -35,8 +36,7 @@ class Home extends StatelessWidget {
                         : dashProvider.bottomIndex == 3
                             ? BookingDetailPage()
                             : dashProvider.bottomIndex == 2
-                                ? const SlotBookingPage(
-                                    shop: 'none', service: 'none')
+                                ? const SwapCoinsPage()
                                 : dashProvider.bottomIndex == 1
                                     ? const TransactionsPage()
                                     : HomePage(),

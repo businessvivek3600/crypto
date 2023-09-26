@@ -28,10 +28,12 @@ class LottieAssets {
   static const String congratulation = 'congratulation.json';
   static const String success = 'success.json';
   static const String pageNotFound = 'data.json';
+  static const String jumpingCoin = 'Is5QEiF4e7.json';
   static const String fiveCircleLoader = '5-circle-loader.json';
   static const String coinsCollection = 'coins_collection.json';
   static const String wallet = 'wallet.json';
   static const String emptyBox = 'empty_box.json';
+  static const String history = 'hbH0SPwfVO.json';
 }
 
 class PDFAssets {

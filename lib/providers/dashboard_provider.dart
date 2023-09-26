@@ -222,4 +222,16 @@ class DashboardProvider extends ChangeNotifier {
     }
     return null;
   }
+
+  Future<void> clear() async {
+    coinModel = null;
+    recentUsers.clear();
+    searchedUsers.clear();
+    coinModel = null;
+    graphType = CoinGraphType.day;
+    loadingCoins = ButtonLoadingState.idle;
+    loadingRecentUsers = ButtonLoadingState.idle;
+    loadingSearchUsers = ButtonLoadingState.idle;
+    loadingInitTrans = ButtonLoadingState.idle;
+  }
 }

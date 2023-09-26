@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:my_global_tools/utils/my_toasts.dart';
 import '/utils/default_logger.dart';
 
 import '../../../models/base/error_response.dart';
@@ -7,34 +8,50 @@ class ApiErrorHandler {
   static String tag = 'ApiErrorHandler';
   static dynamic getMessage(error) {
     dynamic errorDescription = "";
+
     if (error is DioException) {
+      errorLog(
+          'getMessage : $error   ${error.runtimeType}   ${error.type}', tag);
       try {
-        if (error is DioExceptionType) {
+        if (error.response != null) {
+          switch (error.response?.statusCode) {
+            case 404:
+              errorDescription = 'Request not found';
+              break;
+            case 500:
+              errorDescription = 'Internal server error';
+              break;
+            case 503:
+              errorDescription = error.response?.statusMessage;
+              break;
+            default:
+              errorDescription = error.response?.data;
+          }
+          errorDescription = error.response?.data;
+        } else if (DioExceptionType.values.contains(error.type)) {
           switch (error.type) {
             case DioExceptionType.cancel:
-              errorDescription = "Request to API server was cancelled";
+              errorDescription = "Request was cancelled";
               break;
             case DioExceptionType.connectionTimeout:
-              errorDescription = "Connection timeout with API server";
+              errorDescription = "Connection timeout";
               break;
             case DioExceptionType.unknown:
-              errorDescription =
-                  "Connection to API server failed due to internet connection";
+              errorDescription = "Connection failed due to internet connection";
               break;
             case DioExceptionType.receiveTimeout:
-              errorDescription =
-                  "Receive timeout in connection with API server";
+              errorDescription = "Receive timeout in connection ";
               break;
             case DioExceptionType.badCertificate:
               errorDescription =
                   "Error caused by an incorrect certificate as configured by ValidateCertificate";
               break;
             case DioExceptionType.sendTimeout:
-              errorDescription = "Send timeout in connection with API server";
+              errorDescription = "Send timeout in connection";
               break;
             case DioExceptionType.connectionError:
               errorDescription =
-                  "Connection error or socket exception error in connection with API server";
+                  "Connection error or socket exception error in connection";
               break;
             case DioExceptionType.badResponse:
               switch (error.response?.statusCode) {
@@ -64,9 +81,10 @@ class ApiErrorHandler {
         errorDescription = e.toString();
       }
     } else {
-      errorDescription = "Error is not a subtype of DioException";
+      errorDescription = "Unexpected error occurred";
     }
     errorLog('getMessage : $errorDescription', tag);
+    Toasts.fToast(errorDescription);
     return errorDescription;
   }
 }
